@@ -1286,6 +1286,24 @@
   window.notify = notify;
 
   onAuthStateChanged(auth,user=>{if(user&&user.email?.endsWith('@neu.edu.ph'))currentUser=user;});
+
+  // Handle QR scan URL parameter — auto-fill email and show checkin screen
+  (function handleQRParam() {
+    const params = new URLSearchParams(window.location.search);
+    const checkinEmail = params.get('checkin');
+    if (checkinEmail && checkinEmail.endsWith('@neu.edu.ph')) {
+      // Switch to checkin screen, email tab, and pre-fill email
+      showScreen('checkin');
+      // Wait for DOM then switch to email tab
+      setTimeout(() => {
+        const emailTab = document.querySelectorAll('#screen-checkin .tab')[1];
+        if (emailTab) switchCheckinTab('email', emailTab);
+        document.getElementById('prof-email-input').value = checkinEmail;
+        // Clean URL without reload
+        window.history.replaceState({}, '', window.location.pathname);
+      }, 100);
+    }
+  })();
   document.getElementById('filter-period').addEventListener('change',applyFilters);
 
   // ── QR GENERATOR ──
@@ -1296,31 +1314,43 @@
     if (!email || !email.endsWith('@neu.edu.ph')) {
       notify('Enter a valid @neu.edu.ph email'); return;
     }
-    generatedEmail = email;
-    const name = email.split('@')[0].replace('.', ' ').replace(/\b\w/g, c => c.toUpperCase());
-    const appUrl = window.location.origin + '/?qr=' + encodeURIComponent(email);
 
-    // Clear previous
+    generatedEmail = email;
+
+    // Format name from email: "juan.dela.cruz" -> "Juan Dela Cruz"
+    const namePart = email.split('@')[0];
+    const name = namePart.split('.').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+    // App URL with email parameter
+    const appUrl = window.location.origin + window.location.pathname + '?checkin=' + encodeURIComponent(email);
+
+    // Always fully clear previous QR before generating new one
     const wrap = document.getElementById('qr-canvas-wrap');
     wrap.innerHTML = '';
 
-    // Generate QR code
-    new QRCode(wrap, {
-      text: email,
-      width: 200,
-      height: 200,
-      colorDark: '#000000',
-      colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.H
-    });
+    // Small delay ensures DOM is clean before QRCode renders
+    setTimeout(() => {
+      new QRCode(wrap, {
+        text: appUrl,
+        width: 200,
+        height: 200,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }, 50);
 
     document.getElementById('qr-name-label').textContent = name;
     document.getElementById('qr-url-label').textContent = email;
     document.getElementById('qr-output').style.display = 'flex';
+    notify('QR generated for ' + name);
   };
 
   window.clearGenQR = function() {
     document.getElementById('qr-output').style.display = 'none';
+    document.getElementById('qr-canvas-wrap').innerHTML = '';
+    document.getElementById('qr-name-label').textContent = '';
+    document.getElementById('qr-url-label').textContent = '';
     generatedEmail = null;
   };
 
