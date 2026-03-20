@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 
   <style>
@@ -447,6 +448,60 @@
       .mobile-nav { display: flex; width: 100%; gap: 2px; }
       .stats-grid { grid-template-columns: 1fr 1fr; }
       .admin-nav { flex-wrap: wrap; gap: 8px; }
+      .checkin-wrap { padding: 0 0 40px 0; }
+      .admin-content { padding: 16px; }
+      .filter-row { flex-direction: column; }
+      .prof-grid { grid-template-columns: 1fr; }
+      table { font-size: 12px; }
+      tbody td { padding: 10px 10px; }
+      thead th { padding: 8px 10px; }
+      .stat-value { font-size: 24px; }
+    }
+
+    /* QR Generator styles */
+    .qr-generate-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #qr-output {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    #qr-output canvas, #qr-output img {
+      max-width: 200px !important;
+      height: auto !important;
+      border-radius: 4px;
+    }
+
+    .qr-label {
+      font-size: 13px;
+      color: #000;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .qr-url-text {
+      font-size: 10px;
+      color: #666;
+      text-align: center;
+      word-break: break-all;
+    }
+
+    /* Touch-friendly buttons on mobile */
+    @media (max-width: 600px) {
+      .btn { min-height: 48px; font-size: 14px; }
+      .tab { min-height: 40px; }
+      input, select { min-height: 46px; font-size: 16px; }
     }
   </style>
 </head>
@@ -494,22 +549,23 @@
       <label>Select Computer Lab</label>
       <select id="room-select">
         <option value="">Choose a room...</option>
-        <option>Computer Lab 1</option>
-        <option>Computer Lab 2</option>
-        <option>Computer Lab 3</option>
-        <option>Computer Lab 4</option>
-        <option>Computer Lab 5</option>
-        <option>Computer Lab 6</option>
+        <option>M101</option>
+        <option>M102</option>
+        <option>M103</option>
         <option>Mac Lab</option>
-        <option>Programming Lab</option>
-        <option>Networking Lab</option>
-        <option>Hardware Lab</option>
+        <option>M105</option>
+        <option>M106</option>
+        <option>M107</option>
+        <option>M108</option>
+        <option>M109</option>
+        <option>M110</option>
       </select>
     </div>
 
     <div class="tab-row">
-      <button class="tab active" onclick="switchCheckinTab('qr', this)">QR Code</button>
+      <button class="tab active" onclick="switchCheckinTab('qr', this)">Scan QR</button>
       <button class="tab" onclick="switchCheckinTab('email', this)">Email</button>
+      <button class="tab" onclick="switchCheckinTab('generate', this)">My QR</button>
     </div>
 
     <div id="panel-qr" class="tab-panel active">
@@ -521,6 +577,32 @@
       </div>
       <button class="btn btn-primary" id="btn-start-scan" onclick="startScan()">Start Camera</button>
       <button class="btn btn-ghost" id="btn-stop-scan" onclick="stopScan()" style="display:none">Stop Camera</button>
+    </div>
+
+    <div id="panel-generate" class="tab-panel">
+      <div class="card">
+        <div class="qr-generate-wrap">
+          <div style="font-size:13px;color:var(--text-secondary);text-align:center;line-height:1.6">
+            Enter your institutional email to generate your personal QR code.<br>
+            <span style="color:var(--text-muted);font-size:11px">Show this QR at the scanner to check in.</span>
+          </div>
+          <div class="form-group" style="width:100%">
+            <label>Your Institutional Email</label>
+            <input type="email" id="gen-email-input" placeholder="Firstname.Lastname@neu.edu.ph" oninput="clearGenQR()" />
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="generateMyQR()">Generate My QR Code</button>
+
+          <div id="qr-output">
+            <div class="qr-label" id="qr-name-label"></div>
+            <div id="qr-canvas-wrap"></div>
+            <div class="qr-url-text" id="qr-url-label"></div>
+            <div style="display:flex;gap:8px;width:100%;margin-top:4px">
+              <button class="btn btn-ghost" style="flex:1;font-size:12px;color:#000" onclick="downloadQR()">Save QR</button>
+              <button class="btn btn-primary" style="flex:1;font-size:12px;background:#000;color:#fff" onclick="checkinWithGeneratedQR()">Check In Now</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="panel-email" class="tab-panel">
@@ -654,11 +736,16 @@
             <label>Room</label>
             <select id="filter-room" onchange="applyFilters()">
               <option value="">All Rooms</option>
-              <option>Computer Lab 1</option><option>Computer Lab 2</option>
-              <option>Computer Lab 3</option><option>Computer Lab 4</option>
-              <option>Computer Lab 5</option><option>Computer Lab 6</option>
-              <option>Mac Lab</option><option>Programming Lab</option>
-              <option>Networking Lab</option><option>Hardware Lab</option>
+              <option>M101</option>
+              <option>M102</option>
+              <option>M103</option>
+              <option>Mac Lab</option>
+              <option>M105</option>
+              <option>M106</option>
+              <option>M107</option>
+              <option>M108</option>
+              <option>M109</option>
+              <option>M110</option>
             </select>
           </div>
           <div class="filter-group">
@@ -777,7 +864,7 @@
     { id: 'p4', name: 'Pedro Lim', email: 'Pedro.Lim@neu.edu.ph', qr_id: 'NEU-FAC-004', status: 'active' },
     { id: 'p5', name: 'Rosa Cruz', email: 'Rosa.Cruz@neu.edu.ph', qr_id: 'NEU-FAC-005', status: 'active' },
   ];
-  const demoRooms = ['Computer Lab 1','Computer Lab 2','Computer Lab 3','Programming Lab','Mac Lab'];
+  const demoRooms = ['M101','M102','M103','Mac Lab','M105','M106','M107','M108','M109','M110'];
   const demoUses = [14,9,3,21,7];
   const demoLogs = [];
   const now = new Date();
@@ -1196,10 +1283,84 @@
     document.body.appendChild(el);
     nt=setTimeout(()=>el.remove(),3000);
   }
-  window.notify = notify; 
+  window.notify = notify;
 
   onAuthStateChanged(auth,user=>{if(user&&user.email?.endsWith('@neu.edu.ph'))currentUser=user;});
   document.getElementById('filter-period').addEventListener('change',applyFilters);
+
+  // ── QR GENERATOR ──
+  let generatedEmail = null;
+
+  window.generateMyQR = function() {
+    const email = document.getElementById('gen-email-input').value.trim();
+    if (!email || !email.endsWith('@neu.edu.ph')) {
+      notify('Enter a valid @neu.edu.ph email'); return;
+    }
+    generatedEmail = email;
+    const name = email.split('@')[0].replace('.', ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const appUrl = window.location.origin + '/?qr=' + encodeURIComponent(email);
+
+    // Clear previous
+    const wrap = document.getElementById('qr-canvas-wrap');
+    wrap.innerHTML = '';
+
+    // Generate QR code
+    new QRCode(wrap, {
+      text: email,
+      width: 200,
+      height: 200,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+
+    document.getElementById('qr-name-label').textContent = name;
+    document.getElementById('qr-url-label').textContent = email;
+    document.getElementById('qr-output').style.display = 'flex';
+  };
+
+  window.clearGenQR = function() {
+    document.getElementById('qr-output').style.display = 'none';
+    generatedEmail = null;
+  };
+
+  window.downloadQR = function() {
+    const canvas = document.querySelector('#qr-canvas-wrap canvas');
+    if (!canvas) { notify('Generate QR first'); return; }
+    const link = document.createElement('a');
+    link.download = 'NEU-QR-' + (generatedEmail || 'faculty') + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    notify('QR saved to your device');
+  };
+
+  window.checkinWithGeneratedQR = async function() {
+    if (!generatedEmail) { notify('Generate your QR first'); return; }
+    const room = getRoom();
+    if (!room) { notify('Please select a room first'); return; }
+    try {
+      let profId, profName, profStatus;
+      const snap = await getDocs(query(collection(db,'professors'),where('email','==',generatedEmail)));
+      if (snap.empty) {
+        const displayName = generatedEmail.split('@')[0].replace('.',' ').replace(/\b\w/g,c=>c.toUpperCase());
+        const newRef = await addDoc(collection(db,'professors'),{
+          name: displayName, email: generatedEmail,
+          qr_id: 'AUTO-'+Date.now(), status: 'active'
+        });
+        profId = newRef.id; profName = displayName; profStatus = 'active';
+      } else {
+        const profDoc = snap.docs[0];
+        profId = profDoc.id; profName = profDoc.data().name; profStatus = profDoc.data().status;
+      }
+      if (profStatus==='blocked') { notify('Access denied — account is blocked'); return; }
+      const ref = await addDoc(collection(db,'usage_logs'),{
+        professor_id: profId, professor_name: profName,
+        professor_email: generatedEmail, room_number: room,
+        timestamp: serverTimestamp(), method: 'QR Code'
+      });
+      showSuccess(room, profName, 'QR Code', ref.id);
+    } catch(e) { notify('Error: '+e.message); }
+  };
 </script>
 </body>
 </html>
