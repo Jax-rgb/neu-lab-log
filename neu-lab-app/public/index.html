@@ -1196,7 +1196,7 @@
     document.body.appendChild(el);
     nt=setTimeout(()=>el.remove(),3000);
   }
-  window.notify = notify;
+  window.notify = notify; 
 
   onAuthStateChanged(auth,user=>{if(user&&user.email?.endsWith('@neu.edu.ph'))currentUser=user;});
   document.getElementById('filter-period').addEventListener('change',applyFilters);
