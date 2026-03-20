@@ -1331,7 +1331,7 @@
     link.download = 'NEU-QR-' + (generatedEmail || 'faculty') + '.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
-    notify('QR saved to your device');
+    notify('QR saved to your device'); 
   };
 
   window.checkinWithGeneratedQR = async function() {
