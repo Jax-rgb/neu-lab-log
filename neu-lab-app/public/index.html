@@ -41,6 +41,8 @@
       min-height: 100vh;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
     }
 
     .screen { display: none; position: relative; z-index: 1; }
@@ -70,8 +72,8 @@
       border: 1px solid var(--border-light);
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 24px;
       background: var(--surface);
+      color: var(--text);
     }
 
     .landing-header h1 {
@@ -119,12 +121,30 @@
       align-items: flex-start;
       gap: 14px;
       cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
+      transition: border-color 0.25s, background 0.25s, transform 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .role-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transition: transform 0.25s ease;
+      transform-origin: left;
     }
 
     .role-card:hover {
       border-color: var(--border-light);
       background: var(--surface2);
+      transform: translateY(-2px);
+    }
+
+    .role-card:hover::before {
+      transform: scaleX(1);
     }
 
     .card-icon {
@@ -132,13 +152,14 @@
       border: 1px solid var(--border-light);
       border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
       background: var(--surface2);
+      color: var(--text-secondary);
+      flex-shrink: 0;
     }
 
     .role-card h2 { font-size: 14px; font-weight: 600; letter-spacing: -0.2px; }
     .role-card p { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
-    .card-arrow { font-size: 16px; color: var(--text-muted); transition: color 0.2s, transform 0.2s; }
+    .card-arrow { color: var(--text-muted); transition: color 0.2s, transform 0.2s; display: flex; }
     .role-card:hover .card-arrow { color: var(--text); transform: translateX(3px); }
 
     /* CHECK-IN */
@@ -168,7 +189,7 @@
     }
     .back-btn:hover { color: var(--text); }
 
-    .screen-title { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; }
+    .screen-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; }
     .screen-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
 
     .tab-row {
@@ -261,8 +282,7 @@
       width: 60px; height: 60px; background: var(--surface2);
       border: 1px solid var(--border-light); border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 24px; margin: 0 auto; color: var(--success);
-      font-weight: 700;
+      margin: 0 auto;
     }
 
     .success-room { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
@@ -292,8 +312,9 @@
     }
 
     .nav-brand {
-      font-size: 14px; font-weight: 700;
-      display: flex; align-items: center; gap: 10px; letter-spacing: -0.2px;
+      font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; gap: 10px;
+      letter-spacing: 0.02em; color: var(--text-secondary);
     }
 
     .nav-dot { width: 7px; height: 7px; background: var(--text); border-radius: 50%; }
@@ -320,10 +341,18 @@
 
     .stat-card {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 18px;
+      border-radius: var(--radius); padding: 18px 18px 18px 20px;
       display: flex; flex-direction: column; gap: 6px; transition: border-color 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .stat-card::before {
+      content: ''; position: absolute;
+      left: 0; top: 20%; bottom: 20%;
+      width: 2px; background: var(--border-light);
+      border-radius: 2px; transition: background 0.2s;
     }
     .stat-card:hover { border-color: var(--border-light); }
+    .stat-card:hover::before { background: var(--accent); }
 
     .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 600; }
     .stat-value { font-size: 30px; font-weight: 700; letter-spacing: -1px; }
@@ -346,7 +375,7 @@
     thead th:last-child { border-radius: 0 6px 6px 0; }
 
     tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
-    tbody tr:hover { background: var(--surface); }
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
     tbody td { padding: 13px 14px; color: var(--text); }
 
     .badge {
@@ -393,7 +422,8 @@
       width: 38px; height: 38px; border-radius: 8px;
       background: var(--surface2); border: 1px solid var(--border-light);
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 13px; color: var(--text-secondary); flex-shrink: 0;
+      font-weight: 600; font-size: 12px; color: var(--text-secondary);
+      flex-shrink: 0; letter-spacing: 0.05em;
     }
 
     .prof-info { flex: 1; min-width: 0; }
@@ -428,7 +458,7 @@
     }
 
     .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-    .section-head h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+    .section-head h2 { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
 
     .admin-panel { display: none; }
     .admin-panel.active { display: flex; flex-direction: column; gap: 16px; }
@@ -510,28 +540,44 @@
 <!-- LANDING -->
 <div id="screen-landing" class="screen active">
   <div class="landing-header">
-    <div class="logo-mark">🖥️</div>
+    <div class="logo-mark">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+      </svg>
+    </div>
     <div class="uni-tag">New Era University</div>
     <h1>Computer Lab<br>Usage Log</h1>
-    <p class="subtitle">Faculty room access and usage tracking system</p>
+    <p class="subtitle">Faculty room access &amp; usage tracking</p>
   </div>
 
   <div class="landing-cards">
     <div class="role-card" onclick="showCheckin()">
-      <div class="card-icon">👨‍🏫</div>
+      <div class="card-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
       <div>
         <h2>Faculty Access</h2>
-        <p>Scan QR code or sign in with your institutional email.</p>
+        <p>Check in using your QR code or institutional email.</p>
       </div>
-      <div class="card-arrow">→</div>
+      <div class="card-arrow">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
     </div>
     <div class="role-card" onclick="showAdminLogin()">
-      <div class="card-icon">⚙️</div>
+      <div class="card-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
       <div>
         <h2>Admin Portal</h2>
-        <p>View usage analytics and manage faculty accounts.</p>
+        <p>Manage faculty, view logs and usage reports.</p>
       </div>
-      <div class="card-arrow">→</div>
+      <div class="card-arrow">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
     </div>
   </div>
 </div>
@@ -539,7 +585,7 @@
 <!-- CHECK-IN -->
 <div id="screen-checkin" class="screen">
   <div class="checkin-wrap">
-    <button class="back-btn" onclick="showScreen('landing')">← Back</button>
+    <button class="back-btn" onclick="showScreen('landing')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Back</button>
     <div>
       <div class="screen-label">Faculty Check-in</div>
       <h1 class="screen-title">Room Access</h1>
@@ -625,7 +671,9 @@
 <!-- SUCCESS -->
 <div id="screen-success" class="screen">
   <div class="success-card">
-    <div class="success-icon" id="success-icon-display">✓</div>
+    <div class="success-icon" id="success-icon-display">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
     <div>
       <div class="screen-label" id="success-status-label">Check-in Successful</div>
       <div class="success-room" id="success-room-name">Computer Lab 1</div>
@@ -645,10 +693,15 @@
 <!-- ADMIN LOGIN -->
 <div id="screen-admin-login" class="screen">
   <div style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:18px;">
-    <button class="back-btn" onclick="showScreen('landing')">← Back</button>
-    <div>
-      <div class="screen-label">Administrator</div>
-      <h1 class="screen-title">Admin Login</h1>
+    <button class="back-btn" onclick="showScreen('landing')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Back</button>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:40px;height:40px;border:1px solid var(--border-light);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--surface2)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div>
+        <div class="screen-label">Administrator</div>
+        <h1 class="screen-title" style="font-size:20px">Admin Login</h1>
+      </div>
     </div>
     <div class="card" style="display:flex;flex-direction:column;gap:14px">
       <div class="form-group">
@@ -670,7 +723,7 @@
 <div id="screen-admin" class="screen">
   <nav class="admin-nav">
     <div class="nav-brand">
-      <div class="nav-dot"></div>
+      <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="white"/></svg>
       NEU Computer Lab
     </div>
     <div class="nav-tabs">
@@ -777,7 +830,7 @@
             </tr>
           </thead>
           <tbody id="logs-tbody">
-            <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><p>No logs found</p></div></td></tr>
+            <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div><p>No logs found</p></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -791,7 +844,7 @@
       </div>
       <input type="text" id="prof-search" placeholder="Search faculty..." oninput="renderProfessors()" style="max-width:280px" />
       <div class="prof-grid" id="prof-grid">
-        <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">👨‍🏫</div><p>No faculty added yet</p></div>
+        <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><p>No faculty added yet</p></div>
       </div>
     </div>
 
@@ -1130,7 +1183,7 @@
 
   function renderLogs() {
     const tbody=document.getElementById('logs-tbody');
-    if(!filteredLogs.length){tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><p>No logs found</p></div></td></tr>`;document.getElementById('logs-summary').textContent='';return;}
+    if(!filteredLogs.length){tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div><p>No logs found</p></div></td></tr>`;document.getElementById('logs-summary').textContent='';return;}
     tbody.innerHTML=filteredLogs.map((l,i)=>`<tr><td style="color:var(--text-muted)">${i+1}</td><td><strong>${l.professor_name||'—'}</strong></td><td style="color:var(--text-muted);font-size:12px">${l.professor_email||'—'}</td><td style="color:var(--text-secondary)">${l.room_number}</td><td style="font-size:12px;color:var(--text-secondary)">${formatDate(l.timestamp)}</td><td><span class="badge badge-qr">${l.method||'—'}</span></td></tr>`).join('');
     document.getElementById('logs-summary').textContent=`${filteredLogs.length} of ${logs.length} records`;
   }
@@ -1183,7 +1236,7 @@
     const search=(document.getElementById('prof-search')?.value||'').toLowerCase();
     const list=professors.filter(p=>!search||p.name?.toLowerCase().includes(search)||p.email?.toLowerCase().includes(search));
     const grid=document.getElementById('prof-grid');
-    if(!list.length){grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">👨‍🏫</div><p>No faculty found</p></div>`;return;}
+    if(!list.length){grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><p>No faculty found</p></div>`;return;}
     grid.innerHTML=list.map(p=>{
       const ini=p.name?.split(' ').map(n=>n[0]).join('').slice(0,2)||'??';
       const pl=logs.filter(l=>l.professor_id===p.id).length;
@@ -1364,7 +1417,7 @@
     notify('QR saved to your device');
   };
 
-  window.checkinWithGeneratedQR = async function() { 
+  window.checkinWithGeneratedQR = async function() {
     if (!generatedEmail) { notify('Generate your QR first'); return; }
     const room = getRoom();
     if (!room) { notify('Please select a room first'); return; }
