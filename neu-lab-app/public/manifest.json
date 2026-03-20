@@ -1,0 +1,22 @@
+{
+  "name": "NEU Laboratory Usage Log",
+  "short_name": "NEU Lab Log",
+  "description": "Laboratory room usage logging system for NEU professors",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060d1a",
+  "theme_color": "#0a1628",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/3b9eff/ffffff?text=🔬",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/3b9eff/ffffff?text=🔬",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

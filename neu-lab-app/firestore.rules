@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ──
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isNEUEmail() {
+      return request.auth.token.email.matches('.*@neu\\.edu\\.ph');
+    }
+
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isProfessorActive(profId) {
+      return get(/databases/$(database)/documents/professors/$(profId)).data.status == 'active';
+    }
+
+    // ── Admins collection ──
+    match /admins/{adminId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only set via Firebase Console
+    }
+
+    // ── Professors collection ──
+    match /professors/{profId} {
+      // Professors can read their own doc; Admins can read all
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == profId);
+      // Only admins can create, update (e.g., block), delete
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Usage Logs collection ──
+    match /usage_logs/{logId} {
+      // Only admins can read logs
+      allow read: if isAdmin();
+
+      // Professors can only CREATE a log entry, not edit or delete
+      // Also blocked professors cannot create entries
+      allow create: if isSignedIn()
+        && isNEUEmail()
+        && request.resource.data.keys().hasAll(['professor_id','room_number','timestamp'])
+        && isProfessorActive(request.resource.data.professor_id);
+
+      // No one can update or delete logs (immutable audit trail)
+      allow update, delete: if false;
+    }
+
+  }
+}

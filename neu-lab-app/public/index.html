@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEU Laboratory Usage Log</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0a1628" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #060d1a;
+      --surface: #0d1f3c;
+      --surface2: #112244;
+      --border: rgba(99,179,237,0.15);
+      --accent: #3b9eff;
+      --accent2: #00e5b0;
+      --danger: #ff4d6d;
+      --warn: #ffbe0b;
+      --text: #e8f0fe;
+      --muted: #7a9cc5;
+      --card: rgba(13,31,60,0.9);
+      --radius: 14px;
+      --font-head: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* BG Grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(59,158,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,158,255,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Screens ── */
+    .screen { display: none; position: relative; z-index: 1; }
+    .screen.active { display: flex; }
+
+    /* ── Landing ── */
+    #screen-landing {
+      min-height: 100vh;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      gap: 48px;
+    }
+
+    .landing-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .logo-icon {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+      box-shadow: 0 0 40px rgba(59,158,255,0.35);
+    }
+
+    .landing-logo h1 {
+      font-family: var(--font-head);
+      font-size: clamp(22px, 5vw, 32px);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      text-align: center;
+    }
+
+    .landing-logo p {
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+      font-weight: 300;
+    }
+
+    .landing-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      width: 100%;
+      max-width: 520px;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .role-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      backdrop-filter: blur(8px);
+      text-align: center;
+    }
+
+    .role-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(59,158,255,0.2);
+    }
+
+    .role-card .icon { font-size: 36px; }
+    .role-card h2 { font-family: var(--font-head); font-size: 16px; font-weight: 700; }
+    .role-card p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ── Check-in Screen ── */
+    #screen-checkin {
+      min-height: 100vh;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .checkin-wrap {
+      width: 100%;
+      max-width: 420px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .back-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0;
+      transition: color 0.2s;
+      align-self: flex-start;
+    }
+    .back-btn:hover { color: var(--text); }
+
+    .screen-title {
+      font-family: var(--font-head);
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .tab-row {
+      display: flex;
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: none;
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    .tab.active { background: var(--accent); color: #fff; }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: flex; flex-direction: column; gap: 16px; }
+
+    #qr-reader {
+      width: 100%;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 2px solid var(--border);
+      background: #000;
+      min-height: 260px;
+    }
+
+    #qr-reader video { border-radius: var(--radius) !important; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      backdrop-filter: blur(8px);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input, select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+    select option { background: var(--surface); }
+
+    .btn {
+      padding: 14px 24px;
+      border-radius: 10px;
+      border: none;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(59,158,255,0.3);
+    }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+    .btn-google {
+      background: #fff;
+      color: #111;
+      border: 1px solid #ddd;
+    }
+    .btn-google:hover { background: #f5f5f5; }
+
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-success { background: var(--accent2); color: #000; }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Success Screen ── */
+    #screen-success {
+      min-height: 100vh;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .success-card {
+      background: var(--card);
+      border: 1px solid rgba(0,229,176,0.3);
+      border-radius: 20px;
+      padding: 40px 32px;
+      text-align: center;
+      max-width: 360px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+      box-shadow: 0 0 60px rgba(0,229,176,0.15);
+    }
+
+    .success-icon {
+      width: 72px; height: 72px;
+      background: rgba(0,229,176,0.15);
+      border: 2px solid var(--accent2);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+      margin: 0 auto;
+    }
+
+    .success-room {
+      font-family: var(--font-head);
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--accent2);
+    }
+
+    .success-meta { color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+    /* ── Admin ── */
+    #screen-admin {
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    .admin-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-brand {
+      font-family: var(--font-head);
+      font-size: 16px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .nav-tab {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 7px;
+      background: none;
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    .nav-tab.active { background: var(--accent); color: #fff; }
+
+    .admin-content {
+      padding: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: border-color 0.2s;
+      backdrop-filter: blur(8px);
+    }
+    .stat-card:hover { border-color: var(--accent); }
+
+    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+    .stat-value { font-family: var(--font-head); font-size: 32px; font-weight: 800; }
+    .stat-sub { font-size: 12px; color: var(--muted); }
+    .stat-accent { color: var(--accent); }
+    .stat-green { color: var(--accent2); }
+    .stat-warn { color: var(--warn); }
+
+    /* Table */
+    .filter-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+      min-width: 140px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 12px 16px;
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    thead th:first-child { border-radius: 8px 0 0 8px; }
+    thead th:last-child { border-radius: 0 8px 8px 0; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    tbody tr:hover { background: rgba(59,158,255,0.05); }
+
+    tbody td {
+      padding: 14px 16px;
+      color: var(--text);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-active { background: rgba(0,229,176,0.15); color: var(--accent2); }
+    .badge-blocked { background: rgba(255,77,109,0.15); color: var(--danger); }
+
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toggle {
+      position: relative;
+      width: 40px; height: 22px;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0;
+      background: var(--danger);
+      border-radius: 22px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      left: 3px; top: 3px;
+      transition: 0.3s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent2); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+    /* Chart */
+    .chart-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      backdrop-filter: blur(8px);
+    }
+
+    .chart-card h3 {
+      font-family: var(--font-head);
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+
+    /* Professors panel */
+    .prof-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .prof-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      backdrop-filter: blur(8px);
+      transition: border-color 0.2s;
+    }
+    .prof-card:hover { border-color: var(--border); }
+    .prof-card.blocked-card { border-color: rgba(255,77,109,0.3); }
+
+    .prof-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-head);
+      font-weight: 800;
+      font-size: 16px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .prof-info { flex: 1; }
+    .prof-name { font-family: var(--font-head); font-weight: 700; font-size: 15px; }
+    .prof-email { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .prof-top { display: flex; align-items: center; gap: 12px; }
+
+    .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .empty-state .empty-icon { font-size: 48px; opacity: 0.4; }
+    .empty-state p { font-size: 14px; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 24px;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      animation: popIn 0.3s ease both;
+    }
+
+    .modal h2 { font-family: var(--font-head); font-size: 20px; font-weight: 800; }
+
+    /* Notification */
+    .notif {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 2000;
+      animation: slideIn 0.3s ease both;
+      max-width: 320px;
+    }
+    .notif.success { border-color: rgba(0,229,176,0.4); }
+    .notif.error { border-color: rgba(255,77,109,0.4); }
+
+    /* Animations */
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: none; } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+
+    /* Loading */
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .section-head h2 { font-family: var(--font-head); font-size: 18px; font-weight: 700; }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .landing-cards { grid-template-columns: 1fr; }
+      .nav-tabs { display: none; }
+      .admin-nav { flex-wrap: wrap; gap: 10px; }
+      .mobile-nav { display: flex !important; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .mobile-nav {
+      display: none;
+      width: 100%;
+      overflow-x: auto;
+      gap: 4px;
+      padding-bottom: 2px;
+    }
+
+    .room-select-note {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .admin-panel { display: none; }
+    .admin-panel.active { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Export btn */
+    .export-row { display: flex; justify-content: flex-end; }
+
+    hr { border: none; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════
+     SCREEN: LANDING
+════════════════════════════════ -->
+<div id="screen-landing" class="screen active">
+  <div class="landing-logo">
+    <div class="logo-icon">🔬</div>
+    <h1>NEU Laboratory<br>Usage Log</h1>
+    <p>Nueva Ecija University of Science and Technology</p>
+  </div>
+
+  <div class="landing-cards">
+    <div class="role-card" onclick="showCheckin()">
+      <div class="icon">👨‍🏫</div>
+      <h2>Professor Access</h2>
+      <p>Scan QR or sign in with institutional email</p>
+    </div>
+    <div class="role-card" onclick="showAdminLogin()">
+      <div class="icon">🛡️</div>
+      <h2>Admin Portal</h2>
+      <p>Dashboard management & analytics</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SCREEN: CHECK-IN
+════════════════════════════════ -->
+<div id="screen-checkin" class="screen">
+  <div class="checkin-wrap">
+    <button class="back-btn" onclick="showScreen('landing')">← Back</button>
+    <h1 class="screen-title">Professor Check-in</h1>
+
+    <div class="form-group">
+      <label>Room Number</label>
+      <select id="room-select">
+        <option value="">Select Laboratory Room</option>
+        <option value="Lab 101">Lab 101</option>
+        <option value="Lab 102">Lab 102</option>
+        <option value="Lab 103">Lab 103</option>
+        <option value="Lab 201">Lab 201</option>
+        <option value="Lab 202">Lab 202</option>
+        <option value="Lab 301">Lab 301</option>
+        <option value="Computer Lab A">Computer Lab A</option>
+        <option value="Computer Lab B">Computer Lab B</option>
+        <option value="Physics Lab">Physics Lab</option>
+        <option value="Chemistry Lab">Chemistry Lab</option>
+      </select>
+    </div>
+
+    <div class="tab-row">
+      <button class="tab active" onclick="switchCheckinTab('qr', this)">📷 QR Code</button>
+      <button class="tab" onclick="switchCheckinTab('email', this)">✉️ Email</button>
+    </div>
+
+    <!-- QR Panel -->
+    <div id="panel-qr" class="tab-panel active">
+      <div class="card">
+        <div id="qr-reader"></div>
+        <p class="room-select-note" style="margin-top:12px">Point camera at your professor ID QR code</p>
+      </div>
+      <button class="btn btn-primary" id="btn-start-scan" onclick="startScan()">📷 Start Scanner</button>
+      <button class="btn btn-ghost" id="btn-stop-scan" onclick="stopScan()" style="display:none">⏹ Stop Scanner</button>
+    </div>
+
+    <!-- Email Panel -->
+    <div id="panel-email" class="tab-panel">
+      <div class="card" style="display:flex;flex-direction:column;gap:16px">
+        <div class="form-group">
+          <label>Institutional Email</label>
+          <input type="email" id="prof-email-input" placeholder="Firstname.Lastname@neu.edu.ph" />
+        </div>
+        <button class="btn btn-google" onclick="signInWithGoogle('professor')">
+          <img src="https://www.google.com/favicon.ico" width="16" height="16" alt="" />
+          Sign in with Google (@neu.edu.ph)
+        </button>
+        <div class="divider">or enter manually for demo</div>
+        <button class="btn btn-primary" onclick="manualEmailCheckin()">Check In</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SCREEN: SUCCESS
+════════════════════════════════ -->
+<div id="screen-success" class="screen">
+  <div class="success-card">
+    <div class="success-icon">✅</div>
+    <div>
+      <div style="color:var(--muted);font-size:13px;margin-bottom:4px">Check-in Successful</div>
+      <div class="success-room" id="success-room-name">Lab 101</div>
+    </div>
+    <div class="success-meta" id="success-meta"></div>
+    <hr style="border-color:var(--border)">
+    <button class="btn btn-ghost" onclick="showScreen('landing')">← Back to Home</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SCREEN: ADMIN LOGIN
+════════════════════════════════ -->
+<div id="screen-admin-login" class="screen" style="min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
+  <div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:20px;">
+    <button class="back-btn" onclick="showScreen('landing')">← Back</button>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+      <div style="width:44px;height:44px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px">🛡️</div>
+      <div>
+        <div class="screen-title" style="font-size:20px">Admin Login</div>
+        <div style="color:var(--muted);font-size:12px">NEU Laboratory System</div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:16px">
+      <div class="form-group">
+        <label>Admin Email</label>
+        <input type="email" id="admin-email-input" placeholder="admin@neu.edu.ph" />
+      </div>
+      <button class="btn btn-google" onclick="signInWithGoogle('admin')">
+        <img src="https://www.google.com/favicon.ico" width="16" height="16" alt="" />
+        Sign in with Google
+      </button>
+      <div class="divider">or demo login</div>
+      <button class="btn btn-primary" onclick="demoAdminLogin()">Enter Admin Dashboard</button>
+    </div>
+    <p style="font-size:12px;color:var(--muted);text-align:center">Access restricted to authorized NEU administrators</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SCREEN: ADMIN DASHBOARD
+════════════════════════════════ -->
+<div id="screen-admin" class="screen">
+  <!-- Nav -->
+  <nav class="admin-nav">
+    <div class="nav-brand">
+      <span>🔬</span>
+      <span>NEU Lab Admin</span>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchAdminTab('dashboard', this)">Dashboard</button>
+      <button class="nav-tab" onclick="switchAdminTab('logs', this)">Usage Logs</button>
+      <button class="nav-tab" onclick="switchAdminTab('professors', this)">Professors</button>
+    </div>
+    <button class="btn btn-ghost" style="font-size:12px;padding:8px 14px" onclick="adminLogout()">Sign Out</button>
+    <!-- Mobile nav -->
+    <div class="mobile-nav">
+      <button class="nav-tab active" onclick="switchAdminTab('dashboard', this)">Dashboard</button>
+      <button class="nav-tab" onclick="switchAdminTab('logs', this)">Logs</button>
+      <button class="nav-tab" onclick="switchAdminTab('professors', this)">Professors</button>
+    </div>
+  </nav>
+
+  <div class="admin-content">
+
+    <!-- ── Panel: Dashboard ── -->
+    <div id="panel-dashboard" class="admin-panel active">
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Today's Uses</div>
+          <div class="stat-value stat-accent" id="stat-today">—</div>
+          <div class="stat-sub">Check-ins today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Most Active Room</div>
+          <div class="stat-value" style="font-size:18px" id="stat-room">—</div>
+          <div class="stat-sub">This week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Unique Professors</div>
+          <div class="stat-value stat-green" id="stat-profs">—</div>
+          <div class="stat-sub">Total registered</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Blocked Accounts</div>
+          <div class="stat-value stat-warn" id="stat-blocked">—</div>
+          <div class="stat-sub">Restricted access</div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Weekly Usage Trend</h3>
+        <canvas id="usage-chart" height="100"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <h3>Room Usage Distribution</h3>
+        <canvas id="room-chart" height="100"></canvas>
+      </div>
+    </div>
+
+    <!-- ── Panel: Logs ── -->
+    <div id="panel-logs" class="admin-panel">
+      <div class="section-head">
+        <h2>Usage Logs</h2>
+        <button class="btn btn-ghost" style="font-size:13px;padding:8px 16px" onclick="exportLogs()">⬇ Export CSV</button>
+      </div>
+
+      <!-- Filters -->
+      <div class="card">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Professor Name</label>
+            <input type="text" id="filter-name" placeholder="Search name..." oninput="applyFilters()" />
+          </div>
+          <div class="filter-group">
+            <label>Room</label>
+            <select id="filter-room" onchange="applyFilters()">
+              <option value="">All Rooms</option>
+              <option>Lab 101</option><option>Lab 102</option><option>Lab 103</option>
+              <option>Lab 201</option><option>Lab 202</option><option>Lab 301</option>
+              <option>Computer Lab A</option><option>Computer Lab B</option>
+              <option>Physics Lab</option><option>Chemistry Lab</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Period</label>
+            <select id="filter-period" onchange="applyFilters()">
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="custom">Custom Range</option>
+            </select>
+          </div>
+          <div class="filter-group" id="custom-dates" style="display:none">
+            <label>From</label>
+            <input type="date" id="filter-from" onchange="applyFilters()" />
+          </div>
+          <div class="filter-group" id="custom-dates2" style="display:none">
+            <label>To</label>
+            <input type="date" id="filter-to" onchange="applyFilters()" />
+          </div>
+          <button class="btn btn-ghost" style="padding:12px 16px;align-self:flex-end" onclick="clearFilters()">Reset</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Professor</th>
+              <th>Email</th>
+              <th>Room</th>
+              <th>Date & Time</th>
+              <th>Method</th>
+            </tr>
+          </thead>
+          <tbody id="logs-tbody">
+            <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><p>No logs found</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="logs-summary" style="font-size:13px;color:var(--muted);padding:4px 0"></div>
+    </div>
+
+    <!-- ── Panel: Professors ── -->
+    <div id="panel-professors" class="admin-panel">
+      <div class="section-head">
+        <h2>Professors</h2>
+        <button class="btn btn-primary" style="font-size:13px;padding:10px 16px" onclick="openAddProf()">+ Add Professor</button>
+      </div>
+      <div class="form-group">
+        <input type="text" id="prof-search" placeholder="Search professors..." oninput="renderProfessors()" style="max-width:320px" />
+      </div>
+      <div class="prof-grid" id="prof-grid">
+        <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">👨‍🏫</div><p>No professors yet</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     MODALS
+════════════════════════════════ -->
+<!-- Add Professor Modal -->
+<div class="modal-overlay" id="modal-add-prof">
+  <div class="modal">
+    <h2>Add Professor</h2>
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="new-prof-name" placeholder="Juan Dela Cruz" />
+    </div>
+    <div class="form-group">
+      <label>Institutional Email</label>
+      <input type="email" id="new-prof-email" placeholder="Juan.DelaCruz@neu.edu.ph" />
+    </div>
+    <div class="form-group">
+      <label>Professor ID (for QR)</label>
+      <input type="text" id="new-prof-id" placeholder="e.g. NEU-PROF-001" />
+    </div>
+    <div style="display:flex;gap:12px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-add-prof')">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="addProfessor()">Add Professor</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Block Modal -->
+<div class="modal-overlay" id="modal-confirm-block">
+  <div class="modal">
+    <h2 id="block-modal-title">Block Professor?</h2>
+    <p style="color:var(--muted);font-size:14px;line-height:1.6" id="block-modal-body">This will prevent the professor from checking in to any laboratory room.</p>
+    <div style="display:flex;gap:12px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-confirm-block')">Cancel</button>
+      <button class="btn btn-danger" style="flex:1" id="btn-confirm-block" onclick="confirmToggleBlock()">Confirm Block</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════
+     FIREBASE + APP LOGIC
+════════════════════════ -->
+<script type="module">
+  // ─── Firebase SDK ───
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc,
+    query, where, orderBy, serverTimestamp, Timestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ─── CONFIG — REPLACE WITH YOUR FIREBASE CONFIG ───
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  // ─── Init ───
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ hd: 'neu.edu.ph' });
+
+  // ─── State ───
+  let currentUser = null;
+  let qrScanner = null;
+  let professors = [];
+  let logs = [];
+  let filteredLogs = [];
+  let pendingBlockId = null;
+  let pendingBlockStatus = null;
+  let usageChart = null;
+  let roomChart = null;
+
+  // ────────────────────────────────────────────────
+  //  SEED DEMO DATA (if Firestore not configured)
+  // ────────────────────────────────────────────────
+  const DEMO_MODE = firebaseConfig.apiKey === "YOUR_API_KEY";
+
+  const demoProfessors = [
+    { id: 'p1', name: 'Maria Santos', email: 'Maria.Santos@neu.edu.ph', qr_id: 'NEU-PROF-001', status: 'active', uses: 14 },
+    { id: 'p2', name: 'Jose Reyes', email: 'Jose.Reyes@neu.edu.ph', qr_id: 'NEU-PROF-002', status: 'active', uses: 9 },
+    { id: 'p3', name: 'Ana Garcia', email: 'Ana.Garcia@neu.edu.ph', qr_id: 'NEU-PROF-003', status: 'blocked', uses: 3 },
+    { id: 'p4', name: 'Pedro Lim', email: 'Pedro.Lim@neu.edu.ph', qr_id: 'NEU-PROF-004', status: 'active', uses: 21 },
+    { id: 'p5', name: 'Rosa Cruz', email: 'Rosa.Cruz@neu.edu.ph', qr_id: 'NEU-PROF-005', status: 'active', uses: 7 },
+  ];
+
+  const now = new Date();
+  const demoLogs = [];
+  const rooms = ['Lab 101','Lab 102','Computer Lab A','Physics Lab','Lab 201'];
+  const methods = ['QR Code','Google Sign-in'];
+  demoProfessors.forEach(p => {
+    for (let i = 0; i < p.uses; i++) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - Math.floor(Math.random() * 30));
+      d.setHours(7 + Math.floor(Math.random() * 12));
+      demoLogs.push({
+        id: 'l' + demoLogs.length,
+        professor_id: p.id,
+        professor_name: p.name,
+        professor_email: p.email,
+        room_number: rooms[Math.floor(Math.random() * rooms.length)],
+        timestamp: d,
+        method: methods[Math.floor(Math.random() * 2)]
+      });
+    }
+  });
+  demoLogs.sort((a, b) => b.timestamp - a.timestamp);
+
+  // ────────────────────────────────────────────────
+  //  EXPOSE GLOBALS (called from HTML onclick)
+  // ────────────────────────────────────────────────
+  window.showCheckin = showCheckin;
+  window.showAdminLogin = () => showScreen('admin-login');
+  window.showScreen = showScreen;
+  window.switchCheckinTab = switchCheckinTab;
+  window.startScan = startScan;
+  window.stopScan = stopScan;
+  window.signInWithGoogle = signInWithGoogle;
+  window.manualEmailCheckin = manualEmailCheckin;
+  window.demoAdminLogin = demoAdminLogin;
+  window.adminLogout = adminLogout;
+  window.switchAdminTab = switchAdminTab;
+  window.applyFilters = applyFilters;
+  window.clearFilters = clearFilters;
+  window.exportLogs = exportLogs;
+  window.renderProfessors = renderProfessors;
+  window.openAddProf = openAddProf;
+  window.addProfessor = addProfessor;
+  window.closeModal = closeModal;
+  window.toggleBlock = toggleBlock;
+  window.confirmToggleBlock = confirmToggleBlock;
+
+  // ────────────────────────────────────────────────
+  //  SCREEN NAVIGATION
+  // ────────────────────────────────────────────────
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+    if (name !== 'checkin') stopScan();
+  }
+
+  function showCheckin() {
+    showScreen('checkin');
+  }
+
+  // ────────────────────────────────────────────────
+  //  CHECK-IN TABS
+  // ────────────────────────────────────────────────
+  function switchCheckinTab(tab, btn) {
+    document.querySelectorAll('#screen-checkin .tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('#screen-checkin .tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + tab).classList.add('active');
+    if (tab !== 'qr') stopScan();
+  }
+
+  // ────────────────────────────────────────────────
+  //  QR SCANNER
+  // ────────────────────────────────────────────────
+  function startScan() {
+    if (!getSelectedRoom()) { notify('Please select a room first', 'error'); return; }
+    document.getElementById('btn-start-scan').style.display = 'none';
+    document.getElementById('btn-stop-scan').style.display = 'flex';
+
+    qrScanner = new Html5Qrcode('qr-reader');
+    qrScanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 220, height: 220 } },
+      (decodedText) => {
+        stopScan();
+        handleQRCheckin(decodedText);
+      },
+      () => {}
+    ).catch(err => {
+      notify('Camera error: ' + err, 'error');
+      stopScan();
+    });
+  }
+
+  function stopScan() {
+    if (qrScanner) {
+      qrScanner.stop().catch(() => {});
+      qrScanner = null;
+    }
+    document.getElementById('btn-start-scan').style.display = 'flex';
+    document.getElementById('btn-stop-scan').style.display = 'none';
+  }
+
+  async function handleQRCheckin(qrValue) {
+    const room = getSelectedRoom();
+    if (!room) { notify('Please select a room first', 'error'); return; }
+
+    if (DEMO_MODE) {
+      const prof = demoProfessors.find(p => p.qr_id === qrValue || qrValue.includes(p.id));
+      if (!prof) { notify('QR code not recognized. Try: NEU-PROF-001 to NEU-PROF-005', 'error'); return; }
+      if (prof.status === 'blocked') { notify('⛔ Access denied. Account is blocked.', 'error'); return; }
+      recordDemoLog(prof, room, 'QR Code');
+      showSuccess(room, prof.name, 'QR Code');
+      return;
+    }
+
+    try {
+      const q = query(collection(db, 'professors'), where('qr_id', '==', qrValue));
+      const snap = await getDocs(q);
+      if (snap.empty) { notify('QR code not registered', 'error'); return; }
+      const profDoc = snap.docs[0];
+      const prof = profDoc.data();
+      if (prof.status === 'blocked') { notify('⛔ Access denied. Account is blocked.', 'error'); return; }
+      await addDoc(collection(db, 'usage_logs'), {
+        professor_id: profDoc.id,
+        professor_name: prof.name,
+        professor_email: prof.email,
+        room_number: room,
+        timestamp: serverTimestamp(),
+        method: 'QR Code'
+      });
+      showSuccess(room, prof.name, 'QR Code');
+    } catch (e) {
+      notify('Error: ' + e.message, 'error');
+    }
+  }
+
+  // ────────────────────────────────────────────────
+  //  GOOGLE SIGN-IN
+  // ────────────────────────────────────────────────
+  async function signInWithGoogle(role) {
+    if (DEMO_MODE) {
+      if (role === 'admin') { demoAdminLogin(); return; }
+      const room = getSelectedRoom();
+      if (!room) { notify('Please select a room first', 'error'); return; }
+      const prof = demoProfessors[0];
+      recordDemoLog(prof, room, 'Google Sign-in');
+      showSuccess(room, prof.name, 'Google Sign-in');
+      return;
+    }
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const email = result.user.email;
+      if (!email.endsWith('@neu.edu.ph')) {
+        await signOut(auth);
+        notify('Only @neu.edu.ph accounts allowed', 'error'); return;
+      }
+      if (role === 'admin') {
+        const adminDoc = await getDoc(doc(db, 'admins', result.user.uid));
+        if (!adminDoc.exists()) { await signOut(auth); notify('Not an authorized admin', 'error'); return; }
+        currentUser = { ...result.user, role: 'admin' };
+        loadAdminDashboard();
+        showScreen('admin');
+      } else {
+        const room = getSelectedRoom();
+        if (!room) { notify('Please select a room first', 'error'); return; }
+        const q = query(collection(db, 'professors'), where('email', '==', email));
+        const snap = await getDocs(q);
+        if (snap.empty) { notify('Email not registered. Contact admin.', 'error'); return; }
+        const profDoc = snap.docs[0];
+        const prof = profDoc.data();
+        if (prof.status === 'blocked') { notify('⛔ Access denied. Account is blocked.', 'error'); return; }
+        await addDoc(collection(db, 'usage_logs'), {
+          professor_id: profDoc.id, professor_name: prof.name,
+          professor_email: prof.email, room_number: room,
+          timestamp: serverTimestamp(), method: 'Google Sign-in'
+        });
+        showSuccess(room, prof.name, 'Google Sign-in');
+      }
+    } catch (e) { notify('Sign-in failed: ' + e.message, 'error'); }
+  }
+
+  async function manualEmailCheckin() {
+    const email = document.getElementById('prof-email-input').value.trim();
+    const room = getSelectedRoom();
+    if (!room) { notify('Please select a room first', 'error'); return; }
+    if (!email || !email.endsWith('@neu.edu.ph')) { notify('Enter a valid @neu.edu.ph email', 'error'); return; }
+
+    if (DEMO_MODE) {
+      const prof = demoProfessors.find(p => p.email.toLowerCase() === email.toLowerCase())
+        || { id: 'demo', name: email.split('@')[0].replace('.', ' '), email, status: 'active' };
+      if (prof.status === 'blocked') { notify('⛔ Access denied. Account is blocked.', 'error'); return; }
+      recordDemoLog(prof, room, 'Email');
+      showSuccess(room, prof.name, 'Email');
+      return;
+    }
+
+    try {
+      const q = query(collection(db, 'professors'), where('email', '==', email));
+      const snap = await getDocs(q);
+      if (snap.empty) { notify('Email not registered. Contact admin.', 'error'); return; }
+      const profDoc = snap.docs[0];
+      const prof = profDoc.data();
+      if (prof.status === 'blocked') { notify('⛔ Access denied. Account is blocked.', 'error'); return; }
+      await addDoc(collection(db, 'usage_logs'), {
+        professor_id: profDoc.id, professor_name: prof.name,
+        professor_email: prof.email, room_number: room,
+        timestamp: serverTimestamp(), method: 'Email'
+      });
+      showSuccess(room, prof.name, 'Email');
+    } catch (e) { notify('Error: ' + e.message, 'error'); }
+  }
+
+  // ────────────────────────────────────────────────
+  //  SUCCESS SCREEN
+  // ────────────────────────────────────────────────
+  function showSuccess(room, profName, method) {
+    document.getElementById('success-room-name').textContent = room;
+    document.getElementById('success-meta').innerHTML =
+      `<strong>${profName}</strong><br>` +
+      new Date().toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' }) +
+      `<br>via ${method}`;
+    showScreen('success');
+    setTimeout(() => showScreen('landing'), 8000);
+  }
+
+  // ────────────────────────────────────────────────
+  //  ADMIN LOGIN
+  // ────────────────────────────────────────────────
+  function demoAdminLogin() {
+    currentUser = { email: 'admin@neu.edu.ph', role: 'admin', displayName: 'Admin' };
+    professors = [...demoProfessors];
+    logs = [...demoLogs];
+    filteredLogs = [...logs];
+    loadAdminDashboard();
+    showScreen('admin');
+  }
+
+  function adminLogout() {
+    currentUser = null;
+    if (!DEMO_MODE) signOut(auth);
+    showScreen('landing');
+  }
+
+  // ────────────────────────────────────────────────
+  //  ADMIN DASHBOARD
+  // ────────────────────────────────────────────────
+  async function loadAdminDashboard() {
+    if (DEMO_MODE) {
+      renderStats();
+      renderLogs();
+      renderProfessors();
+      renderCharts();
+      return;
+    }
+    try {
+      const [profSnap, logSnap] = await Promise.all([
+        getDocs(collection(db, 'professors')),
+        getDocs(query(collection(db, 'usage_logs'), orderBy('timestamp', 'desc')))
+      ]);
+      professors = profSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      logs = logSnap.docs.map(d => ({
+        id: d.id, ...d.data(),
+        timestamp: d.data().timestamp?.toDate() || new Date()
+      }));
+      filteredLogs = [...logs];
+      renderStats();
+      renderLogs();
+      renderProfessors();
+      renderCharts();
+    } catch (e) { notify('Error loading data: ' + e.message, 'error'); }
+  }
+
+  function renderStats() {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const todayLogs = logs.filter(l => new Date(l.timestamp) >= today);
+    const uniqueProfs = new Set(logs.map(l => l.professor_id)).size;
+    const blocked = professors.filter(p => p.status === 'blocked').length;
+
+    // Most active room this week
+    const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+    const weekLogs = logs.filter(l => new Date(l.timestamp) >= weekAgo);
+    const roomCounts = {};
+    weekLogs.forEach(l => roomCounts[l.room_number] = (roomCounts[l.room_number] || 0) + 1);
+    const topRoom = Object.entries(roomCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
+
+    document.getElementById('stat-today').textContent = todayLogs.length;
+    document.getElementById('stat-room').textContent = topRoom;
+    document.getElementById('stat-profs').textContent = uniqueProfs;
+    document.getElementById('stat-blocked').textContent = blocked;
+  }
+
+  function renderCharts() {
+    // Weekly trend (last 7 days)
+    const days = [];
+    const dayCounts = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i); d.setHours(0, 0, 0, 0);
+      const next = new Date(d); next.setDate(next.getDate() + 1);
+      days.push(d.toLocaleDateString('en-PH', { weekday: 'short' }));
+      dayCounts.push(logs.filter(l => {
+        const t = new Date(l.timestamp);
+        return t >= d && t < next;
+      }).length);
+    }
+
+    const ctx1 = document.getElementById('usage-chart').getContext('2d');
+    if (usageChart) usageChart.destroy();
+    usageChart = new Chart(ctx1, {
+      type: 'line',
+      data: {
+        labels: days,
+        datasets: [{
+          label: 'Check-ins',
+          data: dayCounts,
+          borderColor: '#3b9eff',
+          backgroundColor: 'rgba(59,158,255,0.1)',
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#3b9eff',
+          pointRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: 'rgba(99,179,237,0.08)' }, ticks: { color: '#7a9cc5' } },
+          y: { grid: { color: 'rgba(99,179,237,0.08)' }, ticks: { color: '#7a9cc5', stepSize: 1 }, beginAtZero: true }
+        }
+      }
+    });
+
+    // Room distribution
+    const roomMap = {};
+    logs.forEach(l => roomMap[l.room_number] = (roomMap[l.room_number] || 0) + 1);
+    const ctx2 = document.getElementById('room-chart').getContext('2d');
+    if (roomChart) roomChart.destroy();
+    roomChart = new Chart(ctx2, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(roomMap),
+        datasets: [{
+          label: 'Total Uses',
+          data: Object.values(roomMap),
+          backgroundColor: Object.keys(roomMap).map((_, i) =>
+            ['#3b9eff','#00e5b0','#ffbe0b','#ff4d6d','#a78bfa','#fb923c'][i % 6]
+          ),
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: 'rgba(99,179,237,0.08)' }, ticks: { color: '#7a9cc5' } },
+          y: { grid: { color: 'rgba(99,179,237,0.08)' }, ticks: { color: '#7a9cc5', stepSize: 1 }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  function renderLogs() {
+    const tbody = document.getElementById('logs-tbody');
+    if (!filteredLogs.length) {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><p>No logs found for selected filters</p></div></td></tr>`;
+      document.getElementById('logs-summary').textContent = '';
+      return;
+    }
+    tbody.innerHTML = filteredLogs.map((l, i) => `
+      <tr>
+        <td style="color:var(--muted)">${i + 1}</td>
+        <td><strong>${l.professor_name || '—'}</strong></td>
+        <td style="color:var(--muted);font-size:12px">${l.professor_email || '—'}</td>
+        <td><span style="color:var(--accent)">${l.room_number}</span></td>
+        <td style="font-size:12px">${formatDate(l.timestamp)}</td>
+        <td><span class="badge ${l.method === 'QR Code' ? 'badge-active' : ''}" style="${l.method !== 'QR Code' ? 'background:rgba(59,158,255,0.15);color:var(--accent)' : ''}">${l.method || '—'}</span></td>
+      </tr>
+    `).join('');
+    document.getElementById('logs-summary').textContent = `Showing ${filteredLogs.length} of ${logs.length} records`;
+  }
+
+  function applyFilters() {
+    const name = document.getElementById('filter-name').value.toLowerCase();
+    const room = document.getElementById('filter-room').value;
+    const period = document.getElementById('filter-period').value;
+    const fromEl = document.getElementById('filter-from');
+    const toEl = document.getElementById('filter-to');
+
+    document.getElementById('custom-dates').style.display = period === 'custom' ? 'flex' : 'none';
+    document.getElementById('custom-dates2').style.display = period === 'custom' ? 'flex' : 'none';
+
+    const now2 = new Date();
+    let from = null, to = null;
+    if (period === 'today') { from = new Date(); from.setHours(0,0,0,0); to = new Date(); }
+    else if (period === 'week') { from = new Date(); from.setDate(from.getDate() - 7); }
+    else if (period === 'month') { from = new Date(); from.setMonth(from.getMonth() - 1); }
+    else if (period === 'custom') {
+      if (fromEl.value) from = new Date(fromEl.value);
+      if (toEl.value) { to = new Date(toEl.value); to.setHours(23,59,59,999); }
+    }
+
+    filteredLogs = logs.filter(l => {
+      if (name && !l.professor_name?.toLowerCase().includes(name)) return false;
+      if (room && l.room_number !== room) return false;
+      const t = new Date(l.timestamp);
+      if (from && t < from) return false;
+      if (to && t > to) return false;
+      return true;
+    });
+    renderLogs();
+  }
+
+  function clearFilters() {
+    document.getElementById('filter-name').value = '';
+    document.getElementById('filter-room').value = '';
+    document.getElementById('filter-period').value = 'all';
+    filteredLogs = [...logs];
+    renderLogs();
+  }
+
+  function exportLogs() {
+    const rows = [['#','Professor','Email','Room','Date & Time','Method']];
+    filteredLogs.forEach((l, i) => rows.push([
+      i + 1, l.professor_name || '', l.professor_email || '',
+      l.room_number, formatDate(l.timestamp), l.method || ''
+    ]));
+    const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv,' + encodeURIComponent(csv);
+    a.download = `NEU_Lab_Logs_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    notify('CSV exported!', 'success');
+  }
+
+  function renderProfessors() {
+    const search = (document.getElementById('prof-search')?.value || '').toLowerCase();
+    const list = professors.filter(p =>
+      !search || p.name?.toLowerCase().includes(search) || p.email?.toLowerCase().includes(search)
+    );
+    const grid = document.getElementById('prof-grid');
+    if (!list.length) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">👨‍🏫</div><p>No professors found</p></div>`;
+      return;
+    }
+    grid.innerHTML = list.map(p => {
+      const initials = p.name?.split(' ').map(n => n[0]).join('').slice(0,2) || '??';
+      const profLogs = logs.filter(l => l.professor_id === p.id).length;
+      return `
+        <div class="prof-card ${p.status === 'blocked' ? 'blocked-card' : ''}">
+          <div class="prof-top">
+            <div class="prof-avatar">${initials}</div>
+            <div class="prof-info">
+              <div class="prof-name">${p.name}</div>
+              <div class="prof-email">${p.email}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <div>
+              <span class="badge ${p.status === 'active' ? 'badge-active' : 'badge-blocked'}">${p.status === 'active' ? '● Active' : '● Blocked'}</span>
+              <span style="font-size:12px;color:var(--muted);margin-left:8px">${profLogs} uses</span>
+            </div>
+            <div class="toggle-wrap">
+              <span style="font-size:11px;color:var(--muted)">${p.status === 'active' ? 'Block' : 'Unblock'}</span>
+              <label class="toggle">
+                <input type="checkbox" ${p.status === 'active' ? 'checked' : ''} onchange="toggleBlock('${p.id}', this.checked)" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--muted)">ID: ${p.qr_id || '—'}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.toggleBlock = function(profId, isActive) {
+    pendingBlockId = profId;
+    pendingBlockStatus = isActive ? 'active' : 'blocked';
+    const prof = professors.find(p => p.id === profId);
+    const action = isActive ? 'Unblock' : 'Block';
+    document.getElementById('block-modal-title').textContent = `${action} ${prof?.name}?`;
+    document.getElementById('block-modal-body').textContent = isActive
+      ? `This will restore ${prof?.name}'s access to laboratory rooms.`
+      : `This will prevent ${prof?.name} from checking in to any laboratory room.`;
+    document.getElementById('btn-confirm-block').textContent = `Confirm ${action}`;
+    document.getElementById('btn-confirm-block').className = `btn flex:1 ${isActive ? 'btn-success' : 'btn-danger'}`;
+    document.getElementById('modal-confirm-block').classList.add('open');
+  };
+
+  window.confirmToggleBlock = async function() {
+    const prof = professors.find(p => p.id === pendingBlockId);
+    if (!prof) return;
+    prof.status = pendingBlockStatus;
+
+    if (!DEMO_MODE) {
+      try {
+        await updateDoc(doc(db, 'professors', pendingBlockId), { status: pendingBlockStatus });
+      } catch (e) { notify('Error: ' + e.message, 'error'); return; }
+    }
+
+    closeModal('modal-confirm-block');
+    renderProfessors();
+    renderStats();
+    notify(`${prof.name} ${pendingBlockStatus === 'blocked' ? 'blocked' : 'unblocked'} successfully`, 'success');
+  };
+
+  function openAddProf() {
+    document.getElementById('new-prof-name').value = '';
+    document.getElementById('new-prof-email').value = '';
+    document.getElementById('new-prof-id').value = '';
+    document.getElementById('modal-add-prof').classList.add('open');
+  }
+
+  window.addProfessor = async function() {
+    const name = document.getElementById('new-prof-name').value.trim();
+    const email = document.getElementById('new-prof-email').value.trim();
+    const qrId = document.getElementById('new-prof-id').value.trim();
+    if (!name || !email || !qrId) { notify('Fill all fields', 'error'); return; }
+    if (!email.endsWith('@neu.edu.ph')) { notify('Must be @neu.edu.ph email', 'error'); return; }
+
+    const newProf = { id: 'p' + Date.now(), name, email, qr_id: qrId, status: 'active', uses: 0 };
+
+    if (!DEMO_MODE) {
+      try {
+        const ref = await addDoc(collection(db, 'professors'), { name, email, qr_id: qrId, status: 'active' });
+        newProf.id = ref.id;
+      } catch (e) { notify('Error: ' + e.message, 'error'); return; }
+    }
+
+    professors.push(newProf);
+    closeModal('modal-add-prof');
+    renderProfessors();
+    renderStats();
+    notify(`${name} added successfully`, 'success');
+  };
+
+  // ────────────────────────────────────────────────
+  //  ADMIN TABS
+  // ────────────────────────────────────────────────
+  function switchAdminTab(tab, btn) {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => { if (t.textContent.toLowerCase().includes(tab.toLowerCase().slice(0,4))) t.classList.add('active'); });
+    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + tab).classList.add('active');
+    if (tab === 'logs') applyFilters();
+    if (tab === 'professors') renderProfessors();
+    if (tab === 'dashboard') { renderStats(); renderCharts(); }
+  }
+
+  // ────────────────────────────────────────────────
+  //  HELPERS
+  // ────────────────────────────────────────────────
+  function getSelectedRoom() {
+    return document.getElementById('room-select').value;
+  }
+
+  function recordDemoLog(prof, room, method) {
+    const newLog = {
+      id: 'l' + Date.now(),
+      professor_id: prof.id,
+      professor_name: prof.name,
+      professor_email: prof.email,
+      room_number: room,
+      timestamp: new Date(),
+      method
+    };
+    demoLogs.unshift(newLog);
+    logs = [...demoLogs];
+    filteredLogs = [...logs];
+  }
+
+  function formatDate(ts) {
+    if (!ts) return '—';
+    const d = ts instanceof Date ? ts : ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' });
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  let notifTimeout;
+  function notify(msg, type = 'success') {
+    const existing = document.querySelector('.notif');
+    if (existing) existing.remove();
+    if (notifTimeout) clearTimeout(notifTimeout);
+    const el = document.createElement('div');
+    el.className = `notif ${type}`;
+    el.innerHTML = `${type === 'success' ? '✅' : '❌'} ${msg}`;
+    document.body.appendChild(el);
+    notifTimeout = setTimeout(() => el.remove(), 4000);
+  }
+
+  window.notify = notify;
+  window.closeModal = closeModal;
+
+  // Auth state listener (for real Firebase)
+  if (!DEMO_MODE) {
+    onAuthStateChanged(auth, user => {
+      if (user && user.email?.endsWith('@neu.edu.ph')) {
+        currentUser = user;
+      }
+    });
+  }
+
+  // Filter period watcher
+  document.getElementById('filter-period').addEventListener('change', applyFilters);
+</script>
+</body>
+</html>
