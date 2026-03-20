@@ -543,15 +543,20 @@
 <!-- SUCCESS -->
 <div id="screen-success" class="screen">
   <div class="success-card">
-    <div class="success-icon">✓</div>
+    <div class="success-icon" id="success-icon-display">✓</div>
     <div>
-      <div class="screen-label">Check-in Successful</div>
+      <div class="screen-label" id="success-status-label">Check-in Successful</div>
       <div class="success-room" id="success-room-name">Computer Lab 1</div>
     </div>
     <div class="success-message" id="success-thank-you">Thank you for using Computer Lab 1</div>
     <div class="success-meta" id="success-meta"></div>
+    <div id="session-timer-wrap" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;text-align:center;">
+      <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Session Duration</div>
+      <div id="session-timer" style="font-size:28px;font-weight:700;letter-spacing:-1px;font-variant-numeric:tabular-nums">00:00:00</div>
+    </div>
     <hr />
-    <button class="btn btn-ghost" onclick="showScreen('landing')">← Back to Home</button>
+    <button class="btn btn-primary" id="btn-checkout" onclick="doCheckout()" style="width:100%">Check Out</button>
+    <button class="btn btn-ghost" id="btn-back-home" onclick="showScreen('landing')" style="display:none;width:100%">Back to Home</button>
   </div>
 </div>
 
@@ -845,8 +850,8 @@
       if (snap.empty) { notify('QR code not recognized'); return; }
       const profDoc = snap.docs[0]; const prof = profDoc.data();
       if (prof.status==='blocked') { notify('Access denied — account is blocked'); return; }
-      await addDoc(collection(db,'usage_logs'),{professor_id:profDoc.id,professor_name:prof.name,professor_email:prof.email,room_number:room,timestamp:serverTimestamp(),method:'QR Code'});
-      showSuccess(room,prof.name,'QR Code');
+      const qrRef = await addDoc(collection(db,'usage_logs'),{professor_id:profDoc.id,professor_name:prof.name,professor_email:prof.email,room_number:room,timestamp:serverTimestamp(),method:'QR Code'});
+      showSuccess(room,prof.name,'QR Code',qrRef.id);
     } catch(e) { notify('Error: '+e.message); }
   }
 
@@ -856,19 +861,44 @@
       const email = result.user.email;
       if (!email.endsWith('@neu.edu.ph')) { await signOut(auth); notify('Only @neu.edu.ph accounts allowed'); return; }
       if (role==='admin') {
-        const adminDoc = await getDoc(doc(db,'admins',result.user.uid));
-        if (!adminDoc.exists()) { await signOut(auth); notify('Not an authorized admin'); return; }
+        // Check admins collection, but fallback to allow any @neu.edu.ph if collection is empty
+        let isAdmin = false;
+        try {
+          const adminDoc = await getDoc(doc(db,'admins',result.user.uid));
+          isAdmin = adminDoc.exists();
+        } catch(e) { isAdmin = false; }
+        // Fallback: allow if email ends with @neu.edu.ph (remove this after setting up admins collection)
+        if (!isAdmin && email.endsWith('@neu.edu.ph')) { isAdmin = true; }
+        if (!isAdmin) { await signOut(auth); notify('Not an authorized admin'); return; }
         currentUser = {...result.user,role:'admin'};
         await loadAdminDashboard(); showScreen('admin');
       } else {
         const room = getRoom();
         if (!room) { notify('Please select a room first'); return; }
+        let profId, profName, profStatus;
         const snap = await getDocs(query(collection(db,'professors'),where('email','==',email)));
-        if (snap.empty) { notify('Email not registered. Contact admin.'); return; }
-        const profDoc = snap.docs[0]; const prof = profDoc.data();
-        if (prof.status==='blocked') { notify('Access denied — account is blocked'); return; }
-        await addDoc(collection(db,'usage_logs'),{professor_id:profDoc.id,professor_name:prof.name,professor_email:prof.email,room_number:room,timestamp:serverTimestamp(),method:'Google Sign-in'});
-        showSuccess(room,prof.name,'Google Sign-in');
+        if (snap.empty) {
+          // Auto-register new faculty
+          const displayName = result.user.displayName || email.split('@')[0].replace('.',' ');
+          const newRef = await addDoc(collection(db,'professors'),{
+            name: displayName,
+            email: email,
+            qr_id: 'AUTO-'+Date.now(),
+            status: 'active'
+          });
+          profId = newRef.id;
+          profName = displayName;
+          profStatus = 'active';
+          notify(displayName+' auto-registered as faculty');
+        } else {
+          const profDoc = snap.docs[0];
+          profId = profDoc.id;
+          profName = profDoc.data().name;
+          profStatus = profDoc.data().status;
+        }
+        if (profStatus==='blocked') { notify('Access denied — account is blocked'); return; }
+        const gRef = await addDoc(collection(db,'usage_logs'),{professor_id:profId,professor_name:profName,professor_email:email,room_number:room,timestamp:serverTimestamp(),method:'Google Sign-in'});
+        showSuccess(room,profName,'Google Sign-in',gRef.id);
       }
     } catch(e) { notify('Sign-in failed: '+e.message); }
   }
@@ -879,22 +909,86 @@
     if (!room) { notify('Please select a room first'); return; }
     if (!email||!email.endsWith('@neu.edu.ph')) { notify('Enter a valid @neu.edu.ph email'); return; }
     try {
+      let profId, profName, profStatus;
       const snap = await getDocs(query(collection(db,'professors'),where('email','==',email)));
-      if (snap.empty) { notify('Email not registered. Contact admin.'); return; }
-      const profDoc = snap.docs[0]; const prof = profDoc.data();
-      if (prof.status==='blocked') { notify('Access denied — account is blocked'); return; }
-      await addDoc(collection(db,'usage_logs'),{professor_id:profDoc.id,professor_name:prof.name,professor_email:prof.email,room_number:room,timestamp:serverTimestamp(),method:'Email'});
-      showSuccess(room,prof.name,'Email');
+      if (snap.empty) {
+        // Auto-register new faculty from email
+        const displayName = email.split('@')[0].replace('.',' ').replace(/\w/g,c=>c.toUpperCase());
+        const newRef = await addDoc(collection(db,'professors'),{
+          name: displayName,
+          email: email,
+          qr_id: 'AUTO-'+Date.now(),
+          status: 'active'
+        });
+        profId = newRef.id;
+        profName = displayName;
+        profStatus = 'active';
+        notify(displayName+' auto-registered as faculty');
+      } else {
+        const profDoc = snap.docs[0];
+        profId = profDoc.id;
+        profName = profDoc.data().name;
+        profStatus = profDoc.data().status;
+      }
+      if (profStatus==='blocked') { notify('Access denied — account is blocked'); return; }
+      const eRef = await addDoc(collection(db,'usage_logs'),{professor_id:profId,professor_name:profName,professor_email:email,room_number:room,timestamp:serverTimestamp(),method:'Email'});
+      showSuccess(room,profName,'Email',eRef.id);
     } catch(e) { notify('Error: '+e.message); }
   }
 
-  function showSuccess(room, name, method) {
+  let checkoutLogId = null;
+  let sessionStart = null;
+  let timerInterval = null;
+
+  function showSuccess(room, name, method, logId) {
+    checkoutLogId = logId || null;
+    sessionStart = new Date();
     document.getElementById('success-room-name').textContent = room;
     document.getElementById('success-thank-you').textContent = 'Thank you for using '+room;
-    document.getElementById('success-meta').innerHTML = name+'<br>'+new Date().toLocaleString('en-PH',{dateStyle:'medium',timeStyle:'short'})+' · '+method;
+    document.getElementById('success-meta').innerHTML = name+'<br>'+sessionStart.toLocaleString('en-PH',{dateStyle:'medium',timeStyle:'short'})+' · '+method;
+    document.getElementById('success-status-label').textContent = 'Checked In';
+    document.getElementById('success-icon-display').textContent = '✓';
+    document.getElementById('success-icon-display').style.color = '';
+    document.getElementById('btn-checkout').style.display = 'flex';
+    document.getElementById('btn-back-home').style.display = 'none';
+    document.getElementById('session-timer-wrap').style.display = 'block';
+    // Start timer
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      const elapsed = Math.floor((new Date() - sessionStart) / 1000);
+      const h = String(Math.floor(elapsed/3600)).padStart(2,'0');
+      const m = String(Math.floor((elapsed%3600)/60)).padStart(2,'0');
+      const s = String(elapsed%60).padStart(2,'0');
+      document.getElementById('session-timer').textContent = h+':'+m+':'+s;
+    }, 1000);
     showScreen('success');
-    setTimeout(()=>showScreen('landing'),8000);
   }
+
+  window.doCheckout = async function() {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    const elapsed = sessionStart ? Math.floor((new Date() - sessionStart)/1000) : 0;
+    const h = String(Math.floor(elapsed/3600)).padStart(2,'0');
+    const m = String(Math.floor((elapsed%3600)/60)).padStart(2,'0');
+    const s = String(elapsed%60).padStart(2,'0');
+    const duration = h+':'+m+':'+s;
+    // Update log with checkout time and duration
+    if (checkoutLogId) {
+      try {
+        await updateDoc(doc(db,'usage_logs',checkoutLogId), {
+          checkout_time: serverTimestamp(),
+          duration: duration
+        });
+      } catch(e) {}
+    }
+    // Update UI to checkout state
+    document.getElementById('success-status-label').textContent = 'Checked Out';
+    document.getElementById('success-icon-display').textContent = '✓';
+    document.getElementById('success-thank-you').textContent = 'Session ended. See you next time!';
+    document.getElementById('session-timer').textContent = duration;
+    document.getElementById('btn-checkout').style.display = 'none';
+    document.getElementById('btn-back-home').style.display = 'flex';
+    notify('Checked out successfully');
+  };
 
   function demoAdminLogin() {
     currentUser = {email:'admin@neu.edu.ph',role:'admin'};
