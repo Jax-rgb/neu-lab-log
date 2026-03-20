@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEU Computer Lab Usage Log</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #000;
+      --surface: #111;
+      --surface2: #1a1a1a;
+      --border: #2a2a2a;
+      --border-light: #333;
+      --accent: #fff;
+      --accent-inv: #000;
+      --danger: #ff3b3b;
+      --success: #22c55e;
+      --warn: #f59e0b;
+      --text: #fff;
+      --text-secondary: #999;
+      --text-muted: #555;
+      --card: #0d0d0d;
+      --radius: 10px;
+      --font: 'Inter', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .screen { display: none; position: relative; z-index: 1; }
+    .screen.active { display: flex; }
+
+    /* LANDING */
+    #screen-landing {
+      min-height: 100vh;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+      gap: 56px;
+    }
+
+    .landing-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      animation: fadeDown 0.5s ease both;
+      text-align: center;
+    }
+
+    .logo-mark {
+      width: 56px; height: 56px;
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      background: var(--surface);
+    }
+
+    .landing-header h1 {
+      font-size: clamp(20px, 4vw, 28px);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+    }
+
+    .landing-header .subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .uni-tag {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--border-light);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .landing-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 480px;
+      animation: fadeUp 0.5s 0.15s ease both;
+    }
+
+    .role-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .role-card:hover {
+      border-color: var(--border-light);
+      background: var(--surface2);
+    }
+
+    .card-icon {
+      width: 36px; height: 36px;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      background: var(--surface2);
+    }
+
+    .role-card h2 { font-size: 14px; font-weight: 600; letter-spacing: -0.2px; }
+    .role-card p { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+    .card-arrow { font-size: 16px; color: var(--text-muted); transition: color 0.2s, transform 0.2s; }
+    .role-card:hover .card-arrow { color: var(--text); transform: translateX(3px); }
+
+    /* CHECK-IN */
+    #screen-checkin {
+      min-height: 100vh;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .checkin-wrap {
+      width: 100%;
+      max-width: 400px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .back-btn {
+      background: none; border: none;
+      color: var(--text-secondary);
+      font-family: var(--font); font-size: 13px;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      padding: 0; transition: color 0.2s; align-self: flex-start;
+    }
+    .back-btn:hover { color: var(--text); }
+
+    .screen-title { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; }
+    .screen-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+
+    .tab-row {
+      display: flex;
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 3px;
+      border: 1px solid var(--border);
+      gap: 2px;
+    }
+
+    .tab {
+      flex: 1; padding: 9px; border: none; border-radius: 6px;
+      background: none; color: var(--text-secondary);
+      font-family: var(--font); font-size: 13px; cursor: pointer;
+      transition: all 0.2s; font-weight: 500;
+    }
+    .tab.active { background: var(--accent); color: var(--accent-inv); font-weight: 600; }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: flex; flex-direction: column; gap: 12px; }
+
+    #qr-reader {
+      width: 100%; border-radius: var(--radius); overflow: hidden;
+      border: 1px solid var(--border); background: #000; min-height: 250px;
+    }
+    #qr-reader video { border-radius: var(--radius) !important; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+    label {
+      font-size: 11px; color: var(--text-secondary); font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+
+    input, select {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 7px; padding: 11px 13px; color: var(--text);
+      font-family: var(--font); font-size: 14px; width: 100%;
+      outline: none; transition: border-color 0.2s;
+    }
+    input:focus, select:focus { border-color: var(--border-light); }
+    select option { background: var(--surface2); }
+    input::placeholder { color: var(--text-muted); }
+
+    .btn {
+      padding: 12px 20px; border-radius: 8px; border: none;
+      font-family: var(--font); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.18s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+
+    .btn-primary { background: var(--accent); color: var(--accent-inv); }
+    .btn-primary:hover { background: #e5e5e5; }
+    .btn-google { background: var(--surface2); color: var(--text); border: 1px solid var(--border-light); }
+    .btn-google:hover { background: #222; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-success { background: var(--success); color: #000; font-weight: 700; }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); }
+    .btn-ghost:hover { border-color: var(--border-light); color: var(--text); }
+
+    .divider {
+      display: flex; align-items: center; gap: 10px;
+      color: var(--text-muted); font-size: 11px;
+    }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* SUCCESS */
+    #screen-success {
+      min-height: 100vh; flex-direction: column;
+      align-items: center; justify-content: center; padding: 24px;
+    }
+
+    .success-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 40px 32px; text-align: center;
+      max-width: 340px; width: 100%;
+      display: flex; flex-direction: column; gap: 16px;
+      animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+
+    .success-icon {
+      width: 60px; height: 60px; background: var(--surface2);
+      border: 1px solid var(--border-light); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin: 0 auto; color: var(--success);
+      font-weight: 700;
+    }
+
+    .success-room { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+
+    .success-message {
+      font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+      padding: 12px 16px; background: var(--surface2);
+      border-radius: 8px; border: 1px solid var(--border);
+    }
+
+    .success-meta { color: var(--text-muted); font-size: 12px; line-height: 1.7; }
+
+    /* ADMIN LOGIN */
+    #screen-admin-login {
+      min-height: 100vh; flex-direction: column;
+      align-items: center; justify-content: center; padding: 24px;
+    }
+
+    /* ADMIN DASHBOARD */
+    #screen-admin { min-height: 100vh; flex-direction: column; }
+
+    .admin-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 24px; background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .nav-brand {
+      font-size: 14px; font-weight: 700;
+      display: flex; align-items: center; gap: 10px; letter-spacing: -0.2px;
+    }
+
+    .nav-dot { width: 7px; height: 7px; background: var(--text); border-radius: 50%; }
+
+    .nav-tabs {
+      display: flex; gap: 2px; background: var(--surface);
+      padding: 3px; border-radius: 8px; border: 1px solid var(--border);
+    }
+
+    .nav-tab {
+      padding: 7px 14px; border: none; border-radius: 6px;
+      background: none; color: var(--text-secondary);
+      font-family: var(--font); font-size: 12px; cursor: pointer;
+      transition: all 0.2s; font-weight: 500;
+    }
+    .nav-tab.active { background: var(--accent); color: var(--accent-inv); font-weight: 600; }
+
+    .admin-content {
+      padding: 24px; max-width: 1200px; margin: 0 auto;
+      width: 100%; display: flex; flex-direction: column; gap: 20px;
+    }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px;
+      display: flex; flex-direction: column; gap: 6px; transition: border-color 0.2s;
+    }
+    .stat-card:hover { border-color: var(--border-light); }
+
+    .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 600; }
+    .stat-value { font-size: 30px; font-weight: 700; letter-spacing: -1px; }
+    .stat-sub { font-size: 11px; color: var(--text-muted); }
+    .stat-danger { color: var(--danger); }
+
+    .filter-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+
+    .filter-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 130px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+    thead th {
+      text-align: left; padding: 10px 14px;
+      background: var(--surface2); color: var(--text-muted);
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em;
+      font-weight: 600; white-space: nowrap;
+    }
+    thead th:first-child { border-radius: 6px 0 0 6px; }
+    thead th:last-child { border-radius: 0 6px 6px 0; }
+
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+    tbody tr:hover { background: var(--surface); }
+    tbody td { padding: 13px 14px; color: var(--text); }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 4px; font-size: 10px;
+      font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+    }
+    .badge-active { background: rgba(34,197,94,0.1); color: var(--success); border: 1px solid rgba(34,197,94,0.2); }
+    .badge-blocked { background: rgba(255,59,59,0.1); color: var(--danger); border: 1px solid rgba(255,59,59,0.2); }
+    .badge-qr { background: rgba(255,255,255,0.06); color: var(--text-secondary); border: 1px solid var(--border); }
+
+    .toggle-wrap { display: flex; align-items: center; gap: 8px; }
+    .toggle { position: relative; width: 38px; height: 20px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0; background: var(--surface2);
+      border: 1px solid var(--border-light); border-radius: 20px;
+      cursor: pointer; transition: 0.25s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute; width: 14px; height: 14px;
+      border-radius: 50%; background: var(--text-muted);
+      left: 2px; top: 2px; transition: 0.25s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--success); border-color: var(--success); }
+    .toggle input:checked + .toggle-slider::before { background: #fff; transform: translateX(18px); }
+
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+    .chart-card h3 { font-size: 11px; font-weight: 600; margin-bottom: 18px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); background: var(--card); border: 1px solid var(--border); }
+
+    .prof-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+
+    .prof-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px;
+      display: flex; flex-direction: column; gap: 12px; transition: border-color 0.2s;
+    }
+    .prof-card:hover { border-color: var(--border-light); }
+    .prof-card.blocked-card { border-color: rgba(255,59,59,0.25); }
+
+    .prof-avatar {
+      width: 38px; height: 38px; border-radius: 8px;
+      background: var(--surface2); border: 1px solid var(--border-light);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; color: var(--text-secondary); flex-shrink: 0;
+    }
+
+    .prof-info { flex: 1; min-width: 0; }
+    .prof-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .prof-email { font-size: 11px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .prof-top { display: flex; align-items: center; gap: 10px; }
+
+    .empty-state { padding: 60px 20px; text-align: center; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .empty-state .empty-icon { font-size: 28px; opacity: 0.3; }
+    .empty-state p { font-size: 13px; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 24px; }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface); border: 1px solid var(--border-light);
+      border-radius: 14px; padding: 28px; width: 100%; max-width: 400px;
+      display: flex; flex-direction: column; gap: 16px;
+      animation: popIn 0.25s ease both;
+    }
+
+    .modal h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+    .modal p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+    .notif {
+      position: fixed; bottom: 20px; right: 20px;
+      background: var(--surface2); border: 1px solid var(--border-light);
+      border-radius: 8px; padding: 11px 15px; font-size: 13px;
+      display: flex; align-items: center; gap: 8px;
+      z-index: 2000; animation: slideIn 0.25s ease both;
+      max-width: 280px; color: var(--text);
+    }
+
+    .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .section-head h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+
+    .admin-panel { display: none; }
+    .admin-panel.active { display: flex; flex-direction: column; gap: 16px; }
+
+    .mobile-nav { display: none; }
+
+    hr { border: none; border-top: 1px solid var(--border); }
+
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
+
+    @media (max-width: 600px) {
+      .landing-cards { grid-template-columns: 1fr; }
+      .nav-tabs { display: none; }
+      .mobile-nav { display: flex; width: 100%; gap: 2px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .admin-nav { flex-wrap: wrap; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="screen-landing" class="screen active">
+  <div class="landing-header">
+    <div class="logo-mark">🖥️</div>
+    <div class="uni-tag">New Era University</div>
+    <h1>Computer Lab<br>Usage Log</h1>
+    <p class="subtitle">Faculty room access and usage tracking system</p>
+  </div>
+
+  <div class="landing-cards">
+    <div class="role-card" onclick="showCheckin()">
+      <div class="card-icon">👨‍🏫</div>
+      <div>
+        <h2>Faculty Access</h2>
+        <p>Scan QR code or sign in with your institutional email.</p>
+      </div>
+      <div class="card-arrow">→</div>
+    </div>
+    <div class="role-card" onclick="showAdminLogin()">
+      <div class="card-icon">⚙️</div>
+      <div>
+        <h2>Admin Portal</h2>
+        <p>View usage analytics and manage faculty accounts.</p>
+      </div>
+      <div class="card-arrow">→</div>
+    </div>
+  </div>
+</div>
+
+<!-- CHECK-IN -->
+<div id="screen-checkin" class="screen">
+  <div class="checkin-wrap">
+    <button class="back-btn" onclick="showScreen('landing')">← Back</button>
+    <div>
+      <div class="screen-label">Faculty Check-in</div>
+      <h1 class="screen-title">Room Access</h1>
+    </div>
+
+    <div class="form-group">
+      <label>Select Computer Lab</label>
+      <select id="room-select">
+        <option value="">Choose a room...</option>
+        <option>Computer Lab 1</option>
+        <option>Computer Lab 2</option>
+        <option>Computer Lab 3</option>
+        <option>Computer Lab 4</option>
+        <option>Computer Lab 5</option>
+        <option>Computer Lab 6</option>
+        <option>Mac Lab</option>
+        <option>Programming Lab</option>
+        <option>Networking Lab</option>
+        <option>Hardware Lab</option>
+      </select>
+    </div>
+
+    <div class="tab-row">
+      <button class="tab active" onclick="switchCheckinTab('qr', this)">QR Code</button>
+      <button class="tab" onclick="switchCheckinTab('email', this)">Email</button>
+    </div>
+
+    <div id="panel-qr" class="tab-panel active">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+        <div id="qr-reader"></div>
+        <div style="padding:10px;text-align:center;font-size:11px;color:var(--text-muted);border-top:1px solid var(--border)">
+          Point camera at your NEU faculty ID QR code
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btn-start-scan" onclick="startScan()">Start Camera</button>
+      <button class="btn btn-ghost" id="btn-stop-scan" onclick="stopScan()" style="display:none">Stop Camera</button>
+    </div>
+
+    <div id="panel-email" class="tab-panel">
+      <div class="card" style="display:flex;flex-direction:column;gap:14px">
+        <div class="form-group">
+          <label>Institutional Email</label>
+          <input type="email" id="prof-email-input" placeholder="Firstname.Lastname@neu.edu.ph" />
+        </div>
+        <button class="btn btn-google" onclick="signInWithGoogle('professor')">
+          <img src="https://www.google.com/favicon.ico" width="14" height="14" alt="" />
+          Sign in with Google
+        </button>
+        <div class="divider">or enter manually</div>
+        <button class="btn btn-primary" onclick="manualEmailCheckin()">Check In</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div id="screen-success" class="screen">
+  <div class="success-card">
+    <div class="success-icon">✓</div>
+    <div>
+      <div class="screen-label">Check-in Successful</div>
+      <div class="success-room" id="success-room-name">Computer Lab 1</div>
+    </div>
+    <div class="success-message" id="success-thank-you">Thank you for using Computer Lab 1</div>
+    <div class="success-meta" id="success-meta"></div>
+    <hr />
+    <button class="btn btn-ghost" onclick="showScreen('landing')">← Back to Home</button>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div id="screen-admin-login" class="screen">
+  <div style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:18px;">
+    <button class="back-btn" onclick="showScreen('landing')">← Back</button>
+    <div>
+      <div class="screen-label">Administrator</div>
+      <h1 class="screen-title">Admin Login</h1>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:14px">
+      <div class="form-group">
+        <label>Admin Email</label>
+        <input type="email" id="admin-email-input" placeholder="admin@neu.edu.ph" />
+      </div>
+      <button class="btn btn-google" onclick="signInWithGoogle('admin')">
+        <img src="https://www.google.com/favicon.ico" width="14" height="14" alt="" />
+        Sign in with Google
+      </button>
+      <div class="divider">or demo access</div>
+      <button class="btn btn-primary" onclick="demoAdminLogin()">Enter Dashboard</button>
+    </div>
+    <p style="font-size:11px;color:var(--text-muted);text-align:center">Restricted to authorized NEU administrators only</p>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="screen-admin" class="screen">
+  <nav class="admin-nav">
+    <div class="nav-brand">
+      <div class="nav-dot"></div>
+      NEU Computer Lab
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchAdminTab('dashboard', this)">Dashboard</button>
+      <button class="nav-tab" onclick="switchAdminTab('logs', this)">Logs</button>
+      <button class="nav-tab" onclick="switchAdminTab('professors', this)">Faculty</button>
+    </div>
+    <button class="btn btn-ghost" style="font-size:12px;padding:7px 12px" onclick="adminLogout()">Sign Out</button>
+    <div class="mobile-nav">
+      <button class="nav-tab active" onclick="switchAdminTab('dashboard', this)">Dashboard</button>
+      <button class="nav-tab" onclick="switchAdminTab('logs', this)">Logs</button>
+      <button class="nav-tab" onclick="switchAdminTab('professors', this)">Faculty</button>
+    </div>
+  </nav>
+
+  <div class="admin-content">
+
+    <div id="panel-dashboard" class="admin-panel active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Today's Check-ins</div>
+          <div class="stat-value" id="stat-today">—</div>
+          <div class="stat-sub">Total uses today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Most Used Lab</div>
+          <div class="stat-value" style="font-size:15px;letter-spacing:-0.3px;padding-top:8px" id="stat-room">—</div>
+          <div class="stat-sub">This week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Faculty</div>
+          <div class="stat-value" id="stat-profs">—</div>
+          <div class="stat-sub">Registered accounts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Blocked</div>
+          <div class="stat-value stat-danger" id="stat-blocked">—</div>
+          <div class="stat-sub">Restricted accounts</div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>Weekly Usage</h3>
+        <canvas id="usage-chart" height="90"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Lab Distribution</h3>
+        <canvas id="room-chart" height="90"></canvas>
+      </div>
+    </div>
+
+    <div id="panel-logs" class="admin-panel">
+      <div class="section-head">
+        <h2>Usage Logs</h2>
+        <button class="btn btn-ghost" style="font-size:12px;padding:7px 12px" onclick="exportLogs()">Export CSV</button>
+      </div>
+      <div class="card">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Faculty Name</label>
+            <input type="text" id="filter-name" placeholder="Search..." oninput="applyFilters()" />
+          </div>
+          <div class="filter-group">
+            <label>Room</label>
+            <select id="filter-room" onchange="applyFilters()">
+              <option value="">All Rooms</option>
+              <option>Computer Lab 1</option><option>Computer Lab 2</option>
+              <option>Computer Lab 3</option><option>Computer Lab 4</option>
+              <option>Computer Lab 5</option><option>Computer Lab 6</option>
+              <option>Mac Lab</option><option>Programming Lab</option>
+              <option>Networking Lab</option><option>Hardware Lab</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Period</label>
+            <select id="filter-period" onchange="applyFilters()">
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div class="filter-group" id="custom-dates" style="display:none">
+            <label>From</label>
+            <input type="date" id="filter-from" onchange="applyFilters()" />
+          </div>
+          <div class="filter-group" id="custom-dates2" style="display:none">
+            <label>To</label>
+            <input type="date" id="filter-to" onchange="applyFilters()" />
+          </div>
+          <button class="btn btn-ghost" style="padding:10px 14px;align-self:flex-end;font-size:12px" onclick="clearFilters()">Reset</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Faculty</th><th>Email</th><th>Room</th><th>Date & Time</th><th>Method</th>
+            </tr>
+          </thead>
+          <tbody id="logs-tbody">
+            <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><p>No logs found</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="logs-summary" style="font-size:11px;color:var(--text-muted);padding:2px 0"></div>
+    </div>
+
+    <div id="panel-professors" class="admin-panel">
+      <div class="section-head">
+        <h2>Faculty</h2>
+        <button class="btn btn-primary" style="font-size:12px;padding:8px 14px" onclick="openAddProf()">+ Add Faculty</button>
+      </div>
+      <input type="text" id="prof-search" placeholder="Search faculty..." oninput="renderProfessors()" style="max-width:280px" />
+      <div class="prof-grid" id="prof-grid">
+        <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">👨‍🏫</div><p>No faculty added yet</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-add-prof">
+  <div class="modal">
+    <h2>Add Faculty</h2>
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="new-prof-name" placeholder="Juan Dela Cruz" />
+    </div>
+    <div class="form-group">
+      <label>Institutional Email</label>
+      <input type="email" id="new-prof-email" placeholder="Juan.DelaCruz@neu.edu.ph" />
+    </div>
+    <div class="form-group">
+      <label>Faculty ID (for QR)</label>
+      <input type="text" id="new-prof-id" placeholder="NEU-FAC-001" />
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-add-prof')">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="addProfessor()">Add Faculty</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-confirm-block">
+  <div class="modal">
+    <h2 id="block-modal-title">Block Faculty?</h2>
+    <p id="block-modal-body">This will prevent the faculty member from checking in to any computer lab.</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-confirm-block')">Cancel</button>
+      <button class="btn btn-danger" style="flex:1" id="btn-confirm-block" onclick="confirmToggleBlock()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC58FSj64Lk4Y7s0X-TNGNv-oY19w6N7rM",
+    authDomain: "neu-lab-usage-log-9a986.firebaseapp.com",
+    projectId: "neu-lab-usage-log-9a986",
+    storageBucket: "neu-lab-usage-log-9a986.firebasestorage.app",
+    messagingSenderId: "883098070853",
+    appId: "1:883098070853:web:dfdb0bf318af0b2cef582c"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ hd: 'neu.edu.ph' });
+
+  let currentUser = null, qrScanner = null;
+  let professors = [], logs = [], filteredLogs = [];
+  let pendingBlockId = null, pendingBlockStatus = null;
+  let usageChart = null, roomChart = null;
+
+  const demoProfessors = [
+    { id: 'p1', name: 'Maria Santos', email: 'Maria.Santos@neu.edu.ph', qr_id: 'NEU-FAC-001', status: 'active' },
+    { id: 'p2', name: 'Jose Reyes', email: 'Jose.Reyes@neu.edu.ph', qr_id: 'NEU-FAC-002', status: 'active' },
+    { id: 'p3', name: 'Ana Garcia', email: 'Ana.Garcia@neu.edu.ph', qr_id: 'NEU-FAC-003', status: 'blocked' },
+    { id: 'p4', name: 'Pedro Lim', email: 'Pedro.Lim@neu.edu.ph', qr_id: 'NEU-FAC-004', status: 'active' },
+    { id: 'p5', name: 'Rosa Cruz', email: 'Rosa.Cruz@neu.edu.ph', qr_id: 'NEU-FAC-005', status: 'active' },
+  ];
+  const demoRooms = ['Computer Lab 1','Computer Lab 2','Computer Lab 3','Programming Lab','Mac Lab'];
+  const demoUses = [14,9,3,21,7];
+  const demoLogs = [];
+  const now = new Date();
+  demoProfessors.forEach((p,idx) => {
+    for (let i=0;i<demoUses[idx];i++) {
+      const d = new Date(now);
+      d.setDate(d.getDate()-Math.floor(Math.random()*30));
+      d.setHours(7+Math.floor(Math.random()*12));
+      demoLogs.push({ id:'l'+demoLogs.length, professor_id:p.id, professor_name:p.name, professor_email:p.email, room_number:demoRooms[Math.floor(Math.random()*demoRooms.length)], timestamp:d, method:Math.random()>0.5?'QR Code':'Google Sign-in' });
+    }
+  });
+  demoLogs.sort((a,b)=>b.timestamp-a.timestamp);
+
+  window.showCheckin = () => showScreen('checkin');
+  window.showAdminLogin = () => showScreen('admin-login');
+  window.showScreen = showScreen;
+  window.switchCheckinTab = switchCheckinTab;
+  window.startScan = startScan;
+  window.stopScan = stopScan;
+  window.signInWithGoogle = signInWithGoogle;
+  window.manualEmailCheckin = manualEmailCheckin;
+  window.demoAdminLogin = demoAdminLogin;
+  window.adminLogout = adminLogout;
+  window.switchAdminTab = switchAdminTab;
+  window.applyFilters = applyFilters;
+  window.clearFilters = clearFilters;
+  window.exportLogs = exportLogs;
+  window.renderProfessors = renderProfessors;
+  window.openAddProf = openAddProf;
+  window.addProfessor = addProfessor;
+  window.closeModal = closeModal;
+  window.toggleBlock = toggleBlock;
+  window.confirmToggleBlock = confirmToggleBlock;
+
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('screen-'+name).classList.add('active');
+    if (name!=='checkin') stopScan();
+  }
+
+  function switchCheckinTab(tab, btn) {
+    document.querySelectorAll('#screen-checkin .tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('#screen-checkin .tab-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel-'+tab).classList.add('active');
+    if (tab!=='qr') stopScan();
+  }
+
+  function startScan() {
+    if (!getRoom()) { notify('Please select a room first'); return; }
+    document.getElementById('btn-start-scan').style.display='none';
+    document.getElementById('btn-stop-scan').style.display='flex';
+    qrScanner = new Html5Qrcode('qr-reader');
+    qrScanner.start({facingMode:'environment'},{fps:10,qrbox:{width:200,height:200}},
+      txt=>{stopScan();handleQR(txt);},()=>{}).catch(e=>{notify('Camera error: '+e);stopScan();});
+  }
+
+  function stopScan() {
+    if (qrScanner) { qrScanner.stop().catch(()=>{}); qrScanner=null; }
+    const s=document.getElementById('btn-start-scan');
+    const e=document.getElementById('btn-stop-scan');
+    if(s)s.style.display='flex'; if(e)e.style.display='none';
+  }
+
+  async function handleQR(qrValue) {
+    const room = getRoom();
+    if (!room) { notify('Please select a room first'); return; }
+    try {
+      const snap = await getDocs(query(collection(db,'professors'),where('qr_id','==',qrValue)));
+      if (snap.empty) { notify('QR code not recognized'); return; }
+      const profDoc = snap.docs[0]; const prof = profDoc.data();
+      if (prof.status==='blocked') { notify('Access denied — account is blocked'); return; }
+      await addDoc(collection(db,'usage_logs'),{professor_id:profDoc.id,professor_name:prof.name,professor_email:prof.email,room_number:room,timestamp:serverTimestamp(),method:'QR Code'});
+      showSuccess(room,prof.name,'QR Code');
+    } catch(e) { notify('Error: '+e.message); }
+  }
+
+  async function signInWithGoogle(role) {
+    try {
+      const result = await signInWithPopup(auth,provider);
+      const email = result.user.email;
+      if (!email.endsWith('@neu.edu.ph')) { await signOut(auth); notify('Only @neu.edu.ph accounts allowed'); return; }
+      if (role==='admin') {
+        const adminDoc = await getDoc(doc(db,'admins',result.user.uid));
+        if (!adminDoc.exists()) { await signOut(auth); notify('Not an authorized admin'); return; }
+        currentUser = {...result.user,role:'admin'};
+        await loadAdminDashboard(); showScreen('admin');
+      } else {
+        const room = getRoom();
+        if (!room) { notify('Please select a room first'); return; }
+        const snap = await getDocs(query(collection(db,'professors'),where('email','==',email)));
+        if (snap.empty) { notify('Email not registered. Contact admin.'); return; }
+        const profDoc = snap.docs[0]; const prof = profDoc.data();
+        if (prof.status==='blocked') { notify('Access denied — account is blocked'); return; }
+        await addDoc(collection(db,'usage_logs'),{professor_id:profDoc.id,professor_name:prof.name,professor_email:prof.email,room_number:room,timestamp:serverTimestamp(),method:'Google Sign-in'});
+        showSuccess(room,prof.name,'Google Sign-in');
+      }
+    } catch(e) { notify('Sign-in failed: '+e.message); }
+  }
+
+  async function manualEmailCheckin() {
+    const email = document.getElementById('prof-email-input').value.trim();
+    const room = getRoom();
+    if (!room) { notify('Please select a room first'); return; }
+    if (!email||!email.endsWith('@neu.edu.ph')) { notify('Enter a valid @neu.edu.ph email'); return; }
+    try {
+      const snap = await getDocs(query(collection(db,'professors'),where('email','==',email)));
+      if (snap.empty) { notify('Email not registered. Contact admin.'); return; }
+      const profDoc = snap.docs[0]; const prof = profDoc.data();
+      if (prof.status==='blocked') { notify('Access denied — account is blocked'); return; }
+      await addDoc(collection(db,'usage_logs'),{professor_id:profDoc.id,professor_name:prof.name,professor_email:prof.email,room_number:room,timestamp:serverTimestamp(),method:'Email'});
+      showSuccess(room,prof.name,'Email');
+    } catch(e) { notify('Error: '+e.message); }
+  }
+
+  function showSuccess(room, name, method) {
+    document.getElementById('success-room-name').textContent = room;
+    document.getElementById('success-thank-you').textContent = 'Thank you for using '+room;
+    document.getElementById('success-meta').innerHTML = name+'<br>'+new Date().toLocaleString('en-PH',{dateStyle:'medium',timeStyle:'short'})+' · '+method;
+    showScreen('success');
+    setTimeout(()=>showScreen('landing'),8000);
+  }
+
+  function demoAdminLogin() {
+    currentUser = {email:'admin@neu.edu.ph',role:'admin'};
+    professors = [...demoProfessors]; logs = [...demoLogs]; filteredLogs = [...logs];
+    renderStats(); renderLogs(); renderProfessors(); renderCharts();
+    showScreen('admin');
+  }
+
+  function adminLogout() { currentUser=null; signOut(auth).catch(()=>{}); showScreen('landing'); }
+
+  async function loadAdminDashboard() {
+    try {
+      const [ps,ls] = await Promise.all([getDocs(collection(db,'professors')),getDocs(query(collection(db,'usage_logs'),orderBy('timestamp','desc')))]);
+      professors = ps.docs.map(d=>({id:d.id,...d.data()}));
+      logs = ls.docs.map(d=>({id:d.id,...d.data(),timestamp:d.data().timestamp?.toDate()||new Date()}));
+      filteredLogs=[...logs]; renderStats(); renderLogs(); renderProfessors(); renderCharts();
+    } catch(e) { notify('Error loading data: '+e.message); }
+  }
+
+  function renderStats() {
+    const today=new Date(); today.setHours(0,0,0,0);
+    const todayCount=logs.filter(l=>new Date(l.timestamp)>=today).length;
+    const uniq=new Set(logs.map(l=>l.professor_id)).size;
+    const blocked=professors.filter(p=>p.status==='blocked').length;
+    const weekAgo=new Date(); weekAgo.setDate(weekAgo.getDate()-7);
+    const rc={};
+    logs.filter(l=>new Date(l.timestamp)>=weekAgo).forEach(l=>rc[l.room_number]=(rc[l.room_number]||0)+1);
+    const top=Object.entries(rc).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
+    document.getElementById('stat-today').textContent=todayCount;
+    document.getElementById('stat-room').textContent=top;
+    document.getElementById('stat-profs').textContent=uniq;
+    document.getElementById('stat-blocked').textContent=blocked;
+  }
+
+  function renderCharts() {
+    const days=[],counts=[];
+    for(let i=6;i>=0;i--){
+      const d=new Date(); d.setDate(d.getDate()-i); d.setHours(0,0,0,0);
+      const n=new Date(d); n.setDate(n.getDate()+1);
+      days.push(d.toLocaleDateString('en-PH',{weekday:'short'}));
+      counts.push(logs.filter(l=>{const t=new Date(l.timestamp);return t>=d&&t<n;}).length);
+    }
+    const c1=document.getElementById('usage-chart').getContext('2d');
+    if(usageChart)usageChart.destroy();
+    usageChart=new Chart(c1,{type:'line',data:{labels:days,datasets:[{label:'Check-ins',data:counts,borderColor:'#fff',backgroundColor:'rgba(255,255,255,0.05)',fill:true,tension:0.4,pointBackgroundColor:'#fff',pointRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#555'}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#555',stepSize:1},beginAtZero:true}}}});
+    const rm={};
+    logs.forEach(l=>rm[l.room_number]=(rm[l.room_number]||0)+1);
+    const c2=document.getElementById('room-chart').getContext('2d');
+    if(roomChart)roomChart.destroy();
+    roomChart=new Chart(c2,{type:'bar',data:{labels:Object.keys(rm),datasets:[{label:'Uses',data:Object.values(rm),backgroundColor:'rgba(255,255,255,0.12)',borderColor:'rgba(255,255,255,0.3)',borderWidth:1,borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#555'}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#555',stepSize:1},beginAtZero:true}}}});
+  }
+
+  function renderLogs() {
+    const tbody=document.getElementById('logs-tbody');
+    if(!filteredLogs.length){tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><p>No logs found</p></div></td></tr>`;document.getElementById('logs-summary').textContent='';return;}
+    tbody.innerHTML=filteredLogs.map((l,i)=>`<tr><td style="color:var(--text-muted)">${i+1}</td><td><strong>${l.professor_name||'—'}</strong></td><td style="color:var(--text-muted);font-size:12px">${l.professor_email||'—'}</td><td style="color:var(--text-secondary)">${l.room_number}</td><td style="font-size:12px;color:var(--text-secondary)">${formatDate(l.timestamp)}</td><td><span class="badge badge-qr">${l.method||'—'}</span></td></tr>`).join('');
+    document.getElementById('logs-summary').textContent=`${filteredLogs.length} of ${logs.length} records`;
+  }
+
+  function applyFilters() {
+    const name=document.getElementById('filter-name').value.toLowerCase();
+    const room=document.getElementById('filter-room').value;
+    const period=document.getElementById('filter-period').value;
+    document.getElementById('custom-dates').style.display=period==='custom'?'flex':'none';
+    document.getElementById('custom-dates2').style.display=period==='custom'?'flex':'none';
+    let from=null,to=null;
+    if(period==='today'){from=new Date();from.setHours(0,0,0,0);}
+    else if(period==='week'){from=new Date();from.setDate(from.getDate()-7);}
+    else if(period==='month'){from=new Date();from.setMonth(from.getMonth()-1);}
+    else if(period==='custom'){
+      const fv=document.getElementById('filter-from').value;
+      const tv=document.getElementById('filter-to').value;
+      if(fv)from=new Date(fv);
+      if(tv){to=new Date(tv);to.setHours(23,59,59,999);}
+    }
+    filteredLogs=logs.filter(l=>{
+      if(name&&!l.professor_name?.toLowerCase().includes(name))return false;
+      if(room&&l.room_number!==room)return false;
+      const t=new Date(l.timestamp);
+      if(from&&t<from)return false;
+      if(to&&t>to)return false;
+      return true;
+    });
+    renderLogs();
+  }
+
+  function clearFilters() {
+    document.getElementById('filter-name').value='';
+    document.getElementById('filter-room').value='';
+    document.getElementById('filter-period').value='all';
+    filteredLogs=[...logs]; renderLogs();
+  }
+
+  function exportLogs() {
+    const rows=[['#','Faculty','Email','Room','Date & Time','Method']];
+    filteredLogs.forEach((l,i)=>rows.push([i+1,l.professor_name||'',l.professor_email||'',l.room_number,formatDate(l.timestamp),l.method||'']));
+    const csv=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+    const a=document.createElement('a');
+    a.href='data:text/csv,'+encodeURIComponent(csv);
+    a.download=`NEU_Lab_Logs_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click(); notify('CSV exported');
+  }
+
+  function renderProfessors() {
+    const search=(document.getElementById('prof-search')?.value||'').toLowerCase();
+    const list=professors.filter(p=>!search||p.name?.toLowerCase().includes(search)||p.email?.toLowerCase().includes(search));
+    const grid=document.getElementById('prof-grid');
+    if(!list.length){grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">👨‍🏫</div><p>No faculty found</p></div>`;return;}
+    grid.innerHTML=list.map(p=>{
+      const ini=p.name?.split(' ').map(n=>n[0]).join('').slice(0,2)||'??';
+      const pl=logs.filter(l=>l.professor_id===p.id).length;
+      return `<div class="prof-card ${p.status==='blocked'?'blocked-card':''}">
+        <div class="prof-top">
+          <div class="prof-avatar">${ini}</div>
+          <div class="prof-info"><div class="prof-name">${p.name}</div><div class="prof-email">${p.email}</div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="badge ${p.status==='active'?'badge-active':'badge-blocked'}">${p.status}</span>
+            <span style="font-size:11px;color:var(--text-muted)">${pl} uses</span>
+          </div>
+          <div class="toggle-wrap">
+            <span style="font-size:11px;color:var(--text-muted)">${p.status==='active'?'Active':'Blocked'}</span>
+            <label class="toggle">
+              <input type="checkbox" ${p.status==='active'?'checked':''} onchange="toggleBlock('${p.id}',this.checked)" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted)">ID: ${p.qr_id||'—'}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleBlock(profId, isActive) {
+    pendingBlockId=profId; pendingBlockStatus=isActive?'active':'blocked';
+    const prof=professors.find(p=>p.id===profId);
+    const action=isActive?'Unblock':'Block';
+    document.getElementById('block-modal-title').textContent=`${action} ${prof?.name}?`;
+    document.getElementById('block-modal-body').textContent=isActive?`This will restore ${prof?.name}'s lab access.`:`This will block ${prof?.name} from all computer labs.`;
+    document.getElementById('btn-confirm-block').textContent=`Confirm ${action}`;
+    document.getElementById('btn-confirm-block').className=`btn ${isActive?'btn-success':'btn-danger'}`;
+    document.getElementById('modal-confirm-block').classList.add('open');
+  }
+  window.toggleBlock = toggleBlock;
+
+  async function confirmToggleBlock() {
+    const prof=professors.find(p=>p.id===pendingBlockId);
+    if(!prof)return;
+    prof.status=pendingBlockStatus;
+    try { await updateDoc(doc(db,'professors',pendingBlockId),{status:pendingBlockStatus}); } catch(e){}
+    closeModal('modal-confirm-block');
+    renderProfessors(); renderStats();
+    notify(`${prof.name} ${pendingBlockStatus==='blocked'?'blocked':'unblocked'}`);
+  }
+
+  function openAddProf() {
+    ['new-prof-name','new-prof-email','new-prof-id'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('modal-add-prof').classList.add('open');
+  }
+
+  async function addProfessor() {
+    const name=document.getElementById('new-prof-name').value.trim();
+    const email=document.getElementById('new-prof-email').value.trim();
+    const qrId=document.getElementById('new-prof-id').value.trim();
+    if(!name||!email||!qrId){notify('Fill all fields');return;}
+    if(!email.endsWith('@neu.edu.ph')){notify('Must be @neu.edu.ph email');return;}
+    const np={id:'p'+Date.now(),name,email,qr_id:qrId,status:'active'};
+    try { const ref=await addDoc(collection(db,'professors'),{name,email,qr_id:qrId,status:'active'});np.id=ref.id; } catch(e){}
+    professors.push(np);
+    closeModal('modal-add-prof'); renderProfessors(); renderStats();
+    notify(`${name} added`);
+  }
+
+  function switchAdminTab(tab, btn) {
+    document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t=>{
+      const txt=t.textContent.toLowerCase();
+      if((tab==='professors'&&txt.includes('facul'))||(tab!=='professors'&&txt.includes(tab.slice(0,4))))t.classList.add('active');
+    });
+    document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel-'+tab).classList.add('active');
+    if(tab==='logs')applyFilters();
+    if(tab==='professors')renderProfessors();
+    if(tab==='dashboard'){renderStats();renderCharts();}
+  }
+
+  function getRoom() { return document.getElementById('room-select').value; }
+
+  function formatDate(ts) {
+    if(!ts)return'—';
+    const d=ts instanceof Date?ts:ts.toDate?ts.toDate():new Date(ts);
+    return d.toLocaleString('en-PH',{dateStyle:'medium',timeStyle:'short'});
+  }
+
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  window.closeModal = closeModal;
+
+  let nt;
+  function notify(msg) {
+    const ex=document.querySelector('.notif'); if(ex)ex.remove();
+    if(nt)clearTimeout(nt);
+    const el=document.createElement('div');
+    el.className='notif'; el.textContent=msg;
+    document.body.appendChild(el);
+    nt=setTimeout(()=>el.remove(),3000);
+  }
+  window.notify = notify;
+
+  onAuthStateChanged(auth,user=>{if(user&&user.email?.endsWith('@neu.edu.ph'))currentUser=user;});
+  document.getElementById('filter-period').addEventListener('change',applyFilters);
+</script>
+</body>
+</html>
